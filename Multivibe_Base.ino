@@ -1,11 +1,9 @@
-/* Tonga base software -- written by Craig Durkin / Comingle. First released Aug 17, 2014 */
-/* This software comes pre-loaded on Tonga sex toys */
+/* Multivibe software -- written by Craig Durkin / Comingle. First released Aug 17, 2014 */
+/* This software comes pre-loaded on Comingle Multivibe sex toys */
 
-#include <Comingle.h>
-
+#include <OSSex.h>
 
 bool clicked = false;
-
 
 void setup() {
   // 0 for all Multivibes currently.
@@ -34,12 +32,10 @@ void setup() {
   Toy.attachClick(click);
   Toy.attachDoubleClick(doubleClick);
   Toy.attachLongPressStart(longPress);
-  
 }
 
 void loop() {
 }
-
 
 // Cycle through all the outputs, turn the LED on and leave it on to show that we're on
 void startupSequence() {
@@ -63,12 +59,11 @@ void startupSequence() {
 }
 
 void click() {
-  clicked = true;
   Toy.cyclePattern();
 }
 
 void doubleClick() {
-  Toy.increasePower();
+ Toy.increasePower();
 }
 
 void longPress() {
