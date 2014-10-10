@@ -37,6 +37,7 @@ void setup() {
 void loop() {
 }
 
+
 // Cycle through all the outputs, turn the LED on and leave it on to show that we're on
 void startupSequence() {
   int outs = Toy.device.outCount;
@@ -59,6 +60,7 @@ void startupSequence() {
 }
 
 void click() {
+  clicked = true;
   Toy.cyclePattern();
 }
 
@@ -73,25 +75,6 @@ void longPress() {
 // Begin Pattern functions
 
 int step[3];
-int* blip(int seq) {
-  step[0] = -1;
-  
-  seq %= 5;
-
-  if (seq % 2) {
-    step[1] = 0;
-  } else {
-    step[1] = 200;
-  }
-
-  step[2] = 1000;
-
-  if (seq == 4) {
-    return NULL;
-  } else {
-    return step;
-  }
-}
 
 // Turn on all outputs slightly offset from each other. Continues to generate steps even after outputs are on so that the power can be adjusted.
 int* flicker(int seq) {
@@ -116,6 +99,7 @@ int* pulse(int seq) {
     step[0] = random(0,3);
     step[1] = 144;
   }
+  
   step[2] = 70;
   return step;
 }
@@ -175,27 +159,29 @@ int* fadeOffset(int seq) {
     step[0] = 2;
     step[1] = fadeNormalize(seq);
   }
+  
+  step[2] = 30;
   return step;
 }
 
 int* first(int seq) {
   step[0] = 0;
   step[1] = 100;
-  step[2] = 200;
+  step[2] = 50;
   return step;
 }
 
 int* second(int seq) {
   step[0] = 1;
   step[1] = 100;
-  step[2] = 200;
+  step[2] = 50;
   return step;
 }
 
 int* third(int seq) {
   step[0] = 2;
   step[1] = 100;
-  step[2] = 200;
+  step[2] = 50;
   return step;
 }
 
