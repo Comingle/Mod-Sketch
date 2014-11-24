@@ -1,4 +1,4 @@
-/* Multivibe software -- written by Craig Durkin / Comingle. First released Aug 17, 2014 */
+/* Multivibe Sketch v0.2 -- written by Craig Durkin / Comingle. */
 /* This software comes pre-loaded on Comingle Multivibe sex toys */
 
 #include <OSSex.h>
@@ -6,16 +6,17 @@
 bool clicked = false;
 
 void setup() {
-  // 0 for all Multivibes currently.
-  Toy.setID(0);
+  // Set ID. ALPHA (0) or BETA (1) are current options.
+  Toy.setID();
   
   // Button will increase/decrease power by 20%
-  Toy.setScale(0.2);
+  Toy.setPowerScale(0.2);
   
   // Blip all the motors and flash the LED to show that everything is working and the device is on.
   startupSequence();
 
   // Set the patterns that the button will cycle through
+
   Toy.addPattern(first);
   Toy.addPattern(second);
   Toy.addPattern(third);
@@ -32,10 +33,56 @@ void setup() {
   Toy.attachClick(click);
   Toy.attachDoubleClick(doubleClick);
   Toy.attachLongPressStart(longPress);
+  
+  Serial.begin(9600);
+  
 }
 
+
+
 void loop() {
+  char command[1];
+  byte val;
+  if (Serial.available() > 0) {
+    Serial.readBytes(command,1);
+    if (command[0] == 'l') {
+      val = Serial.parseInt();
+      Toy.setLED(0,val);
+      Serial.println(val);
+    } else if (command[0] == '0' || command[0] == '1' || command[0] == '2') {
+      val = Serial.parseInt();
+      Toy.setOutput(command[0], val);
+      Serial.println(val);
+    } else if (command[0] == '-') {
+      int out = Serial.parseInt();
+      out *= -1;
+      val = Serial.parseInt();
+      Toy.setOutput(out,val);
+    } else if (command[0] == 'p') {
+      Serial.println(Toy.decreasePower());
+    } else if (command[0] == 'P') {
+      Serial.println(Toy.increasePower());
+    } else if (command[0] == 't') {
+      Serial.println(Toy.decreaseTime());
+    } else if (command[0] == 'T') {
+      Serial.println(Toy.increaseTime());
+    } else if (command[0] == 'r') {
+      val = Serial.parseInt();
+      Toy.runPattern(val);
+      Serial.println(Toy.getPattern());
+    } else if (command[0] == 'g') {  
+      Serial.println(Toy.getPattern());
+    } else if (command[0] == 's') {
+      Toy.stop();
+    } else if (command[0] == 'c') {
+      Toy.cyclePattern();
+      Serial.println(Toy.getPattern());
+    }
+  }
+ 
 }
+
+
 
 // Cycle through all the outputs, turn the LED on and leave it on to show that we're on
 void startupSequence() {
@@ -59,6 +106,7 @@ void startupSequence() {
 }
 
 void click() {
+  clicked = true;
   Toy.cyclePattern();
 }
 
@@ -73,25 +121,6 @@ void longPress() {
 // Begin Pattern functions
 
 int step[3];
-int* blip(int seq) {
-  step[0] = -1;
-  
-  seq %= 5;
-
-  if (seq % 2) {
-    step[1] = 0;
-  } else {
-    step[1] = 200;
-  }
-
-  step[2] = 1000;
-
-  if (seq == 4) {
-    return NULL;
-  } else {
-    return step;
-  }
-}
 
 // Turn on all outputs slightly offset from each other. Continues to generate steps even after outputs are on so that the power can be adjusted.
 int* flicker(int seq) {
@@ -107,6 +136,7 @@ int* flicker(int seq) {
   return step;
 }
 
+
 // Randomly blip an output on for a short burst.
 int* pulse(int seq) {
   if (seq % 2) {
@@ -116,6 +146,7 @@ int* pulse(int seq) {
     step[0] = random(0,3);
     step[1] = 144;
   }
+
   step[2] = 70;
   return step;
 }
@@ -135,21 +166,20 @@ int* pulse2(int seq) {
 
 // fade output 0 in and out, fade output 1 in as 0 is fading out, fade output 2 in as 1 as fading out.
 int* fadeOffset(int seq) {
-  step[2] = 60;
 
   // sequence runs: 0 -> 255 -> 0 in 5 step increments.
   // 0 -> 255: 51 steps.
   // 255 -> 0: 51 steps;
   // -> 102 steps per output, 306 steps total.
   // normalize sequence
-  seq %= 306;
+  seq %= 307;
   
   // output 0
-  if (seq < 51) {
+  if (seq <= 51) {
     step[0] = 0;
     step[1] = fadeNormalize(seq);
     // output 0 and 1
-  } else if (seq < 154) {
+  } else if (seq <= 154) {
     if (seq % 2) {
       step[0] = 1;
       step[1] = 2.5*(seq-51);
@@ -160,7 +190,7 @@ int* fadeOffset(int seq) {
       step[2] = 30;
     }
     // outputs 1 and 2
-  } else if (seq < 256) {
+  } else if (seq <= 256) {
     if (seq % 2) {
       step[0] = 2;
       step[1] = 2.5*(seq-153);
@@ -175,27 +205,29 @@ int* fadeOffset(int seq) {
     step[0] = 2;
     step[1] = fadeNormalize(seq);
   }
+  
+  step[2] = 30;
   return step;
 }
 
 int* first(int seq) {
   step[0] = 0;
   step[1] = 100;
-  step[2] = 200;
+  step[2] = 50;
   return step;
 }
 
 int* second(int seq) {
   step[0] = 1;
   step[1] = 100;
-  step[2] = 200;
+  step[2] = 50;
   return step;
 }
 
 int* third(int seq) {
   step[0] = 2;
   step[1] = 100;
-  step[2] = 200;
+  step[2] = 50;
   return step;
 }
 
@@ -228,11 +260,11 @@ int* fadeSequence(int seq) {
   // 255 -> 0: 51 steps;
   // -> 102 steps per output, 306 steps total.
   // normalize sequence
-  seq %= 306;
+  seq %= 307;
   
-  if (seq < 103) {
+  if (seq <= 102) {
     step[0] = 0;
-  } else if (seq < 205) {
+  } else if (seq <= 204) {
     step[0] = 1;
   } else {
     step[0] = 2;
