@@ -83,7 +83,10 @@ void loop() {
 }
 
 
+<<<<<<< HEAD:Multivibe_Base/Multivibe_Base.ino
 
+=======
+>>>>>>> FETCH_HEAD:Multivibe_Base.ino
 // Cycle through all the outputs, turn the LED on and leave it on to show that we're on
 void startupSequence() {
   int outs = Toy.device.outCount;
@@ -146,7 +149,11 @@ int* pulse(int seq) {
     step[0] = random(0,3);
     step[1] = 144;
   }
+<<<<<<< HEAD:Multivibe_Base/Multivibe_Base.ino
 
+=======
+  
+>>>>>>> FETCH_HEAD:Multivibe_Base.ino
   step[2] = 70;
   return step;
 }
