@@ -1,5 +1,5 @@
 /* Multivibe Sketch v0.2 -- written by Craig Durkin / Comingle. */
-/* This software comes pre-loaded on Comingle Multivibe sex toys */
+/* This software comes pre-loaded on Comingle Mod sex toys */
 
 #include <OSSex.h>
 
@@ -25,7 +25,7 @@ void setup() {
   Toy.addPattern(weird3);
   Toy.addPattern(flicker);
   Toy.addPattern(weird2);
-  Toy.addPattern(fadeSequence);
+  // Toy.addPattern(fadeSequence);
   Toy.addPattern(fadeOffset);
   Toy.addPattern(pulse2);
 

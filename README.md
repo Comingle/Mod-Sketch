@@ -1,7 +1,7 @@
 Multivibe Software v0.2
 =====
 
-This is the sketch that runs whenever you turn your Multivibe on. Feel free to use it as a starting point for you own, or simply to restore your toy back to its original state.
+This is the sketch that runs whenever you turn your Mod on. Feel free to use it as a starting point for you own, or simply to restore your toy back to its original state.
 
 This sketch sets up a serial console for you to interact with your toy without having to upload a new sketch. Once you connect to your toy over a serial connection (within the Arduino IDE, Hyperterminal, zterm, etc), it will accept several commands. Separate commands from their argument by a single comma:
 
