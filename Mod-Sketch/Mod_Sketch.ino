@@ -1,4 +1,4 @@
-/* Multivibe Sketch v0.2 -- written by Craig Durkin / Comingle. */
+/* Mod Sketch v0.2 -- written by Craig Durkin / Comingle. */
 /* This software comes pre-loaded on Comingle Mod sex toys */
 
 #include <OSSex.h>
@@ -7,6 +7,7 @@ bool clicked = false;
 
 void setup() {
   // Set ID. ALPHA (0) or BETA (1) are current options.
+  // The sketch won't compile until you set this!
   Toy.setID();
   
   // Button will increase/decrease power by 20%
