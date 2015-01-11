@@ -78,6 +78,10 @@ void loop() {
     } else if (command[0] == 'c') {
       Toy.cyclePattern();
       Serial.println(Toy.getPattern());
+    } else if (command[0] == 'i') {
+      int in = Serial.parseInt();
+      in %= Toy.device.inCount;
+      Serial.println(Toy.getInput(in));
     }
   }
  
