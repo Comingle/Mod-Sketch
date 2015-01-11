@@ -45,3 +45,10 @@ You can adjust power and time settings with `p`,`P`,`t`, and `T`. All power and 
 * `P` to increase power.
 * `t` to decrease pattern step time (run faster).
 * `T` to increase pattern step time.
+
+Read an input:
+```
+i,0
+```
+
+The `i` command reads a given input channel on your Mod and prints that value to the console. Mods have two inputs, so `i,0` and `i,1` are the two options for now.
