@@ -1,6 +1,7 @@
 /* Mod Sketch v0.2 -- written by Craig Durkin / Comingle. */
 /* This software comes pre-loaded on Comingle Mod sex toys */
 
+/* Include the library */
 #include <OSSex.h>
 
 bool clicked = false;
@@ -16,8 +17,8 @@ void setup() {
   // Blip all the motors and flash the LED to show that everything is working and the device is on.
   startupSequence();
 
-  // Set the patterns that the button will cycle through
-
+  // Set the patterns that the button will cycle through. Toy will do nothing on startup, and clicking the button once will run the 'first' pattern
+  // Clicking again will run 'second', etc.
   Toy.addPattern(first);
   Toy.addPattern(second);
   Toy.addPattern(third);
@@ -35,6 +36,7 @@ void setup() {
   Toy.attachDoubleClick(doubleClick);
   Toy.attachLongPressStart(longPress);
   
+  // Start the Serial console
   Serial.begin(9600);
   
 }
@@ -42,43 +44,44 @@ void setup() {
 
 
 void loop() {
+  // Serial console. Read a character in to command[1], and a value in to val
   char command[1];
   byte val;
   if (Serial.available() > 0) {
     Serial.readBytes(command,1);
-    if (command[0] == 'l') {
+    if (command[0] == 'l') { // Set LED power
       val = Serial.parseInt();
       Toy.setLED(0,val);
       Serial.println(val);
-    } else if (command[0] == '0' || command[0] == '1' || command[0] == '2') {
+    } else if (command[0] == '0' || command[0] == '1' || command[0] == '2') { // Set power of individual motor
       val = Serial.parseInt();
       Toy.setOutput(command[0], val);
       Serial.println(val);
-    } else if (command[0] == '-') {
+    } else if (command[0] == '-') { // Catch '-1', set power of all motors
       int out = Serial.parseInt();
       out *= -1;
       val = Serial.parseInt();
       Toy.setOutput(out,val);
-    } else if (command[0] == 'p') {
+    } else if (command[0] == 'p') { 
       Serial.println(Toy.decreasePower());
-    } else if (command[0] == 'P') {
+    } else if (command[0] == 'P') { 
       Serial.println(Toy.increasePower());
-    } else if (command[0] == 't') {
+    } else if (command[0] == 't') { // Decrease pattern time, as in everything goes faster
       Serial.println(Toy.decreaseTime());
     } else if (command[0] == 'T') {
       Serial.println(Toy.increaseTime());
-    } else if (command[0] == 'r') {
+    } else if (command[0] == 'r') { // Run a specific pattern, r,0; r,1; etc.
       val = Serial.parseInt();
       Toy.runPattern(val);
       Serial.println(Toy.getPattern());
-    } else if (command[0] == 'g') {  
+    } else if (command[0] == 'g') {  // Get number of currently running pattern 
       Serial.println(Toy.getPattern());
     } else if (command[0] == 's') {
       Toy.stop();
     } else if (command[0] == 'c') {
       Toy.cyclePattern();
       Serial.println(Toy.getPattern());
-    } else if (command[0] == 'i') {
+    } else if (command[0] == 'i') { // Read input 0 or 1 and print it to serial port
       int in = Serial.parseInt();
       in %= Toy.device.inCount;
       Serial.println(Toy.getInput(in));
@@ -109,21 +112,25 @@ void startupSequence() {
   }
 }
 
+// Click handler. Currently moves to next pattern.
 void click() {
   clicked = true;
   Toy.cyclePattern();
 }
 
+// Double click handler Currently increases power.
 void doubleClick() {
  Toy.increasePower();
 }
 
+// Click and hold handler. Currently decreases power.
 void longPress() {
   Toy.decreasePower();
 }
 
 // Begin Pattern functions
 
+// Step variable for storing next pattern step. Must be global.
 int step[3];
 
 // Turn on all outputs slightly offset from each other. Continues to generate steps even after outputs are on so that the power can be adjusted.
@@ -213,6 +220,7 @@ int* fadeOffset(int seq) {
   return step;
 }
 
+// First motor only
 int* first(int seq) {
   step[0] = 0;
   step[1] = 100;
@@ -220,6 +228,7 @@ int* first(int seq) {
   return step;
 }
 
+// Second motor only
 int* second(int seq) {
   step[0] = 1;
   step[1] = 100;
@@ -227,6 +236,7 @@ int* second(int seq) {
   return step;
 }
 
+// Third motor only
 int* third(int seq) {
   step[0] = 2;
   step[1] = 100;
@@ -255,6 +265,7 @@ int *fadeCos(int seq) {
   return step;
 }
 
+// This pattern is described as boring! Use at your own risk.
 int* fadeSequence(int seq) {
   step[2] = 30;
 
