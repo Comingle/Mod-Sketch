@@ -27,7 +27,6 @@ void setup() {
   Toy.addPattern(weird3);
   Toy.addPattern(flicker);
   Toy.addPattern(weird2);
-  // Toy.addPattern(fadeSequence);
   Toy.addPattern(fadeOffset);
   Toy.addPattern(pulse2);
 
@@ -47,6 +46,7 @@ void loop() {
   // Serial console. Read a character in to command[1], and a value in to val
   char command[1];
   byte val;
+ 
   if (Serial.available() > 0) {
     Serial.readBytes(command,1);
     if (command[0] == 'l') { // Set LED power
@@ -130,172 +130,106 @@ void longPress() {
 
 // Begin Pattern functions
 
-// Step variable for storing next pattern step. Must be global.
-int step[3];
+// First motor only
+// Why have a 50ms timing on the step (Toy.step[3]) ? This lets you adjust the power of the pattern,
+// so that instead of running [100, 0, 0, 50] the whole time, it might become [120, 0, 0, 50] after a button click
+int first(int seq) {
+  Toy.step[0] = 100;
+  Toy.step[1] = 0;
+  Toy.step[2] = 0;
+  Toy.step[3] = 50;
+  return 1;
+}
 
-// Turn on all outputs slightly offset from each other. Continues to generate steps even after outputs are on so that the power can be adjusted.
-int* flicker(int seq) {
+// Second motor only
+int second(int seq) {
+  Toy.step[0] = 0;
+  Toy.step[1] = 100;
+  Toy.step[2] = 0;
+  Toy.step[3] = 50;
+  return 1;
+}
+
+// Third motor only
+int third(int seq) {
+  Toy.step[0] = 0;
+  Toy.step[1] = 0;
+  Toy.step[2] = 100;
+  Toy.step[3] = 50;
+  return 1;
+}
+
+// Turn on all outputs slightly offset from each other.
+int flicker(int seq) {
+  // set all motors initally to -1, ie "leave it alone"
+  Toy.step[0] = Toy.step[1] = Toy.step[2] = -1; 
+  
   if (seq > 2) {
-    step[2] = 200;
+    Toy.step[3] = 200;
   } else {
-    step[2] = 20;
+    Toy.step[3] = 20;
   }
+  
   seq %= 3;
-  step[0] = seq;
-  step[1] = 80;
- 
-  return step;
+  Toy.step[seq] = 80;
+  
+  return 1;
 }
 
 
 // Randomly blip an output on for a short burst.
-int* pulse(int seq) {
+int pulse(int seq) {
   if (seq % 2) {
-    step[0] = -1;
-    step[1] = 0;
+    Toy.step[0] = Toy.step[1] = Toy.step[2] = 0;
   } else {
-    step[0] = random(0,3);
-    step[1] = 144;
+    Toy.step[random(0,3)] = 144;
   }
-  step[2] = 70;
-  return step;
+  
+  Toy.step[3] = 70;
+  return 1; 
 }
 
 // Opposite of pulse() -- turn on all outputs, randomly blip one off
-int* pulse2(int seq) {
+int pulse2(int seq) {
   if (seq % 2) {
-    step[0] = -1;
-    step[1] = 100;
+    Toy.step[0] = Toy.step[1] = Toy.step[2] = 100;
   } else {
-    step[0] = random(0,3);
-    step[1] = 0;
-  }
-  step[2] = 100;
-  return step;
-}
-
-// fade output 0 in and out, fade output 1 in as 0 is fading out, fade output 2 in as 1 as fading out.
-int* fadeOffset(int seq) {
-
-  // sequence runs: 0 -> 255 -> 0 in 5 step increments.
-  // 0 -> 255: 51 steps.
-  // 255 -> 0: 51 steps;
-  // -> 102 steps per output, 306 steps total.
-  // normalize sequence
-  seq %= 307;
-  
-  // output 0
-  if (seq <= 51) {
-    step[0] = 0;
-    step[1] = fadeNormalize(seq);
-    // output 0 and 1
-  } else if (seq <= 154) {
-    if (seq % 2) {
-      step[0] = 1;
-      step[1] = 2.5*(seq-51);
-      step[2] = 30;
-    } else {
-      step[0] = 0;
-      step[1] = 255 - 2.5*(seq-52);
-      step[2] = 30;
-    }
-    // outputs 1 and 2
-  } else if (seq <= 256) {
-    if (seq % 2) {
-      step[0] = 2;
-      step[1] = 2.5*(seq-153);
-      step[2] = 30;
-    } else {
-      step[0] = 1;
-      step[1] = 255 - 2.5*(seq-154);
-      step[2] = 30;
-    }
-    // output 2
-  } else {
-    step[0] = 2;
-    step[1] = fadeNormalize(seq);
+    Toy.step[random(0,3)] = 0;
   }
   
-  step[2] = 30;
-  return step;
+  Toy.step[3] = 100;
+  return 1; 
 }
 
-// First motor only
-int* first(int seq) {
-  step[0] = 0;
-  step[1] = 100;
-  step[2] = 50;
-  return step;
+
+int weird2(int seq) {
+  Toy.step[2] = round(127*cos(tan(tan(seq/(8*PI)))-PI/2)+127);
+  Toy.step[3] = 30;
+  return 1; 
 }
 
-// Second motor only
-int* second(int seq) {
-  step[0] = 1;
-  step[1] = 100;
-  step[2] = 50;
-  return step;
+int weird3(int seq) {
+  Toy.step[2] = round(50*(cos(seq/(8*PI)+PI/2) + sin(seq/2))+100);
+  Toy.step[3] = 30;
+  return 1; 
 }
 
-// Third motor only
-int* third(int seq) {
-  step[0] = 2;
-  step[1] = 100;
-  step[2] = 50;
-  return step;
+int fadeCos(int seq) {
+  Toy.step[0] = Toy.step[1] = Toy.step[2] = round(127 * cos((seq / (8*PI))-PI) + 127);
+  Toy.step[3] = 50;
+  return 1; 
 }
 
-int* weird2(int seq) {
-  step[0] = 0;
-  step[2] = 30;
-  step[1] = round(127*cos(tan(tan(seq/(8*PI)))-PI/2)+127);
-  return step;
-}
-
-int* weird3(int seq) {
-  step[0] = 2;
-  step[2] = 30;
-  step[1] = round(50*(cos(seq/(8*PI)+PI/2) + sin(seq/2))+100);
-  return step;
-}
-
-int *fadeCos(int seq) {
-  step[0] = -1;
-  step[2] = 50;
-  step[1] = round(127 * cos((seq / (8*PI))-PI) + 127);
-  return step;
-}
-
-// This pattern is described as boring! Use at your own risk.
-int* fadeSequence(int seq) {
-  step[2] = 30;
-
-  // sequence runs: 0 -> 255 -> 0 in 5 step increments.
-  // 0 -> 255: 51 steps.
-  // 255 -> 0: 51 steps;
-  // -> 102 steps per output, 306 steps total.
-  // normalize sequence
-  seq %= 307;
-  
-  if (seq <= 102) {
-    step[0] = 0;
-  } else if (seq <= 204) {
-    step[0] = 1;
-  } else {
-    step[0] = 2;
+int fadeOffset(int seq) {
+  // cos sequence takes 158 steps to run. start motor 1 a third of the way in (53 steps), start motor 2 2/3 (106 steps) of the way in.
+  Toy.step[0] = round(127 * cos((seq / (8*PI))-PI) + 127);
+  if (seq >= 58) { 
+    Toy.step[1] = round(127 * cos(((seq-58) / (8*PI))-PI) + 127);
+  } else if (seq >= 106) {
+    Toy.step[2] = round(127 * cos(((seq-106) / (8*PI))-PI) + 127);
   }
-  
-  step[1] = fadeNormalize(seq);
-  return step;
-}
-
-// outputs the proper power level for our fade sequence. we know that it's 102 steps to go from 0 to 255 back to 0 in 5 step increments.
-int fadeNormalize(int seq) {
-  seq %= 102;
-  if (seq <= 51) {
-    return 5 * seq;
-  } else {
-    return 255 - 5*(seq-51);
-  }
+  Toy.step[3] = 50;
+  return 1;
 }
 
 
