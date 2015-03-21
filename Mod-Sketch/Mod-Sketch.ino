@@ -4,13 +4,11 @@
 /* Include the library */
 #include <OSSex.h>
 
-bool clicked = false;
-
 void setup() {
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
   Toy.setID();
-  
+
   // Button will increase/decrease power by 20%
   Toy.setPowerScale(0.2);
   
@@ -19,12 +17,14 @@ void setup() {
 
   // Set the patterns that the button will cycle through. Toy will do nothing on startup, and clicking the button once will run the 'first' pattern
   // Clicking again will run 'second', etc.
+
   Toy.addPattern(first);
   Toy.addPattern(second);
   Toy.addPattern(third);
   Toy.addPattern(pulse);
   Toy.addPattern(fadeCos);
   Toy.addPattern(weird3);
+  Toy.addPattern(sharpRamp);
   Toy.addPattern(flicker);
   Toy.addPattern(weird2);
   Toy.addPattern(fadeOffset);
@@ -34,10 +34,10 @@ void setup() {
   Toy.attachClick(click);
   Toy.attachDoubleClick(doubleClick);
   Toy.attachLongPressStart(longPress);
-  
+
   // Start the Serial console
   Serial.begin(9600);
-  
+
 }
 
 
@@ -46,7 +46,7 @@ void loop() {
   // Serial console. Read a character in to command[1], and a value in to val
   char command[1];
   byte val;
- 
+
   if (Serial.available() > 0) {
     Serial.readBytes(command,1);
     if (command[0] == 'l') { // Set LED power
@@ -62,9 +62,19 @@ void loop() {
       out *= -1;
       val = Serial.parseInt();
       Toy.setOutput(out,val);
-    } else if (command[0] == 'p') { 
+    } else if (command[0] == '{') {
+      int motors[3];
+      motors[0] = Serial.parseInt();
+      motors[1] = Serial.parseInt();
+      motors[2] = Serial.parseInt();
+      for (int i = 0; i < 3; i++) {
+        if (motors[i] >= 0) {
+          Toy.setOutput(i, motors[i]);
+        }
+      }
+    } else if (command[0] == 'p') {
       Serial.println(Toy.decreasePower());
-    } else if (command[0] == 'P') { 
+    } else if (command[0] == 'P') {
       Serial.println(Toy.increasePower());
     } else if (command[0] == 't') { // Decrease pattern time, as in everything goes faster
       Serial.println(Toy.decreaseTime());
@@ -74,7 +84,7 @@ void loop() {
       val = Serial.parseInt();
       Toy.runPattern(val);
       Serial.println(Toy.getPattern());
-    } else if (command[0] == 'g') {  // Get number of currently running pattern 
+    } else if (command[0] == 'g') {  // Get number of currently running pattern
       Serial.println(Toy.getPattern());
     } else if (command[0] == 's') {
       Toy.stop();
@@ -87,7 +97,7 @@ void loop() {
       Serial.println(Toy.getInput(in));
     }
   }
- 
+
 }
 
 
@@ -95,16 +105,16 @@ void loop() {
 void startupSequence() {
   int outs = Toy.device.outCount;
   int outInterval = 100 / outs;
-  
+
   Toy.setLED(0,128);
-    
+
   for (int i = 0; i < outs; i++) {
     Toy.setOutput(i, 100+outInterval*i);
     delay(100);
     Toy.setOutput(i, 0);
     delay(50);
   }
-  for (int i = 0; i < 3; i++) {  
+  for (int i = 0; i < 3; i++) {
     Toy.setLED(0,0);
     delay(100);
     Toy.setLED(0,128);
@@ -114,7 +124,6 @@ void startupSequence() {
 
 // Click handler. Currently moves to next pattern.
 void click() {
-  clicked = true;
   Toy.cyclePattern();
 }
 
@@ -141,6 +150,15 @@ int first(int seq) {
   return 1;
 }
 
+int on_off(int seq) {
+  if (seq % 20) {
+    Toy.step[0] = 200;
+  } else {
+    Toy.step[0] = 0;
+  }
+  return 1;
+}
+
 // Second motor only
 int second(int seq) {
   Toy.step[0] = 0;
@@ -162,17 +180,17 @@ int third(int seq) {
 // Turn on all outputs slightly offset from each other.
 int flicker(int seq) {
   // set all motors initally to -1, ie "leave it alone"
-  Toy.step[0] = Toy.step[1] = Toy.step[2] = -1; 
-  
+  Toy.step[0] = Toy.step[1] = Toy.step[2] = -1;
+
   if (seq > 2) {
     Toy.step[3] = 200;
   } else {
     Toy.step[3] = 20;
   }
-  
+
   seq %= 3;
   Toy.step[seq] = 80;
-  
+
   return 1;
 }
 
@@ -184,9 +202,9 @@ int pulse(int seq) {
   } else {
     Toy.step[random(0,3)] = 144;
   }
-  
+
   Toy.step[3] = 70;
-  return 1; 
+  return 1;
 }
 
 // Opposite of pulse() -- turn on all outputs, randomly blip one off
@@ -196,42 +214,50 @@ int pulse2(int seq) {
   } else {
     Toy.step[random(0,3)] = 0;
   }
-  
+
   Toy.step[3] = 100;
-  return 1; 
+  return 1;
 }
 
 
 int weird2(int seq) {
   Toy.step[2] = round(127*cos(tan(tan(seq/(8*PI)))-PI/2)+127);
   Toy.step[3] = 30;
-  return 1; 
+  return 1;
 }
 
 int weird3(int seq) {
   Toy.step[2] = round(50*(cos(seq/(8*PI)+PI/2) + sin(seq/2))+100);
   Toy.step[3] = 30;
-  return 1; 
+  return 1;
+}
+
+int sharpRamp(int seq) {
+  // neat exponential sequence inspired by github/jgeisler0303
+  const uint8_t fadeTable[32] = {0, 1, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 9, 10, 12, 15, 17, 21, 25, 30, 36, 43, 51, 61, 73, 87, 104, 125, 149, 178, 213, 255};
+
+  seq %= 32;
+  if (seq < 32) {
+    Toy.step[0] = Toy.step[1] = Toy.step[2] = fadeTable[seq];
+  }
+  Toy.step[3] = 12;
 }
 
 int fadeCos(int seq) {
   Toy.step[0] = Toy.step[1] = Toy.step[2] = round(127 * cos((seq / (8*PI))-PI) + 127);
   Toy.step[3] = 50;
-  return 1; 
+  return 1;
 }
 
 int fadeOffset(int seq) {
   // cos sequence takes 158 steps to run. start motor 1 a third of the way in (53 steps), start motor 2 2/3 (106 steps) of the way in.
   Toy.step[0] = round(127 * cos((seq / (8*PI))-PI) + 127);
-  if (seq >= 58) { 
+  if (seq >= 58) {
     Toy.step[1] = round(127 * cos(((seq-58) / (8*PI))-PI) + 127);
-  } else if (seq >= 106) {
+  }
+  if (seq >= 106) {
     Toy.step[2] = round(127 * cos(((seq-106) / (8*PI))-PI) + 127);
   }
   Toy.step[3] = 50;
   return 1;
 }
-
-
-
-

@@ -17,7 +17,7 @@ To turn the LED off:
 l,0
 ```
 
-* `0,x`,`1,x`,`2,x`,`-1,x`,... to set a particular output
+* `0,x`,`1,x`,`2,x`,`-1,x`,... to set a particular output (motor)
 
 To turn all outputs on to 150:
 ```
@@ -33,6 +33,12 @@ To turn output 2 to 220:
 * `g` to get the current pattern number.
 * `s` to stop all patterns and turn all outputs off.
 * `r,x` to run a particular pattern.
+
+If the command begins with `{`, you can control all motors in a single command:
+```
+{25, 50, 100}
+```
+Will set motor 0 to 25, motor 1 to 50, and motor 2 to 100. Note that there is no time component to this command; it will run until something interrupts it, such as a `s`top command, or another `{...` command.
 
 Run the first pattern:
 ```
