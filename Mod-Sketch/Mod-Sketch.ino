@@ -1,3 +1,6 @@
+#include <Wire.h>
+
+
 /* Mod Sketch v0.2 -- written by Craig Durkin / Comingle. */
 /* This software comes pre-loaded on Comingle Mod sex toys */
 
@@ -7,16 +10,18 @@
 void setup() {
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
-  Toy.setID();
+  Toy.setID(BETA);
 
   // Button will increase/decrease power by 20%
-  Toy.setPowerScale(0.2);
+ // Toy.setPowerScale(0.2);
   
   // Blip all the motors and flash the LED to show that everything is working and the device is on.
   startupSequence();
 
   // Set the patterns that the button will cycle through. Toy will do nothing on startup, and clicking the button once will run the 'first' pattern
   // Clicking again will run 'second', etc.
+
+  Toy.addPattern(andyRain);
 
   Toy.addPattern(first);
   Toy.addPattern(second);
@@ -207,6 +212,40 @@ int pulse(int seq) {
   return 1;
 }
 
+int andyRandomBlip(int seq) {
+
+Toy.step[0] = Toy.step[1] = Toy.step[2] = 0; 
+  Toy.step[random(0,3)] = random(2)%2*100;
+ 
+  Toy.step[3] = random(20,150);
+
+return 1;
+
+}
+
+// Andy Test Rain
+int andyRain(int seq) {
+
+Toy.step[0] = Toy.step[1] = Toy.step[2] = 0; //Reset all motors
+
+//Decide if to drop a raindrop or not
+
+if(!random(
+  
+  round(5 * cos((seq / (100*PI)))-PI))
+  
+  ){ // Every now and then will return a 0, which we add a ! to to make the statement true
+Toy.step[random(0,3)] = 100; // drop a rainblob of standard impact strength
+Toy.step[3] = 60; // set standard time for a rainblob to hit
+}
+else{
+ 
+  Toy.step[3] = random(20,150); //random amount of time between drops
+}
+  
+  return 1;
+}
+
 // Opposite of pulse() -- turn on all outputs, randomly blip one off
 int pulse2(int seq) {
   if (seq % 2) {
@@ -216,6 +255,48 @@ int pulse2(int seq) {
   }
 
   Toy.step[3] = 100;
+
+  
+  
+  return 1;
+}
+
+
+// Raindrops auto-cycling a storm
+int andyRainCycle(int seq) {
+
+Toy.step[0] = Toy.step[1] = Toy.step[2] = 0; //Reset all motors
+
+//Decide if to drop a raindrop or not
+
+if(!random(
+  
+  round(5 * cos((seq / (100*PI)))-PI))
+  
+  ){ // Every now and then will return a 0, which we add a ! to to make the statement true
+Toy.step[random(0,3)] = 100; // drop a rainblob of standard impact strength
+Toy.step[3] = 60; // set standard time for a rainblob to hit
+}
+else{
+ 
+  Toy.step[3] = random(20,150); //random amount of time between drops
+}
+  
+  return 1;
+}
+
+// Opposite of pulse() -- turn on all outputs, randomly blip one off
+int pulse2(int seq) {
+  if (seq % 2) {
+    Toy.step[0] = Toy.step[1] = Toy.step[2] = 100;
+  } else {
+    Toy.step[random(0,3)] = 0;
+  }
+
+  Toy.step[3] = 100;
+
+  
+  
   return 1;
 }
 
