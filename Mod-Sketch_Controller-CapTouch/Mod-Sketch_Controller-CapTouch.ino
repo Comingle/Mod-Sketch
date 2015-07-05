@@ -1,13 +1,38 @@
-#include <Wire.h>
-
-
 /* Mod Sketch v0.2 -- written by Craig Durkin / Comingle. */
 /* This software comes pre-loaded on Comingle Mod sex toys */
 
 /* Include the library */
 #include <OSSex.h>
+#include <ADCTouch.h>
+
+int ref0, ref1;       //reference values to remove offset
+
+int led = 13;
+
+ int qvalue0;
+int     qvalue1;
+
+int controlval0=0;
+int controlval1=0;
+
+#include <Wire.h>
+
+
+
 
 void setup() {
+  
+  //QTOUCH setup
+   // No pins to setup, pins can still be used regularly, although it will affect readings
+
+   // Serial.begin(9600);
+
+    ref0 = ADCTouch.read(A2, 500);    //create reference values to 
+    ref1 = ADCTouch.read(A3, 500);      //account for the capacitance of the pad
+pinMode(led,OUTPUT);
+
+////////////
+  
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
   Toy.setID(BETA);
@@ -22,6 +47,7 @@ void setup() {
   // Clicking again will run 'second', etc.
 
   Toy.addPattern(andyRain);
+  Toy.addPattern(shiftmotor);
 
   Toy.addPattern(first);
   Toy.addPattern(second);
@@ -48,20 +74,14 @@ void setup() {
 
 
 void loop() {
-
-
-serialProcessor();
-
   
 
-}
-
-void serialProcessor()
-{
+  
   // Serial console. Read a character in to command[1], and a value in to val
   char command[1];
   byte val;
-if (Serial.available() > 0) {
+
+  if (Serial.available() > 0) {
     Serial.readBytes(command,1);
     if (command[0] == 'l') { // Set LED power
       val = Serial.parseInt();
@@ -112,7 +132,32 @@ if (Serial.available() > 0) {
     }
   }
   
+   qvalue0 = ADCTouch.read(A2);   //no second parameter
+     qvalue1 = ADCTouch.read(A3);     //   --> 100 samples
+
+    qvalue0 -= ref0;       //remove offset
+    qvalue1 -= ref1;
+
+    Serial.print(qvalue0 > 40);    //return pressed or not pressed
+    Serial.print("\t");
+    Serial.print(qvalue1 > 40);
+    Serial.print("\t\t");
+    Serial.print(qvalue0);             //return value
+    Serial.print("\t");
+    Serial.println(qvalue1);
+    
+    controlval0=constrain(qvalue0*4,0,255);
+    
+            controlval1=constrain(qvalue1*4,0,255);
+
+    analogWrite(led,controlval0);
+
+   // Toy.setOutput(-1,controlval0);
+    
+    delay(1); //delay is for the cap touch sensing
+
 }
+
 
 // Cycle through all the outputs, turn the LED on and leave it on to show that we're on
 void startupSequence() {
@@ -156,26 +201,16 @@ void longPress() {
 // Why have a 50ms timing on the step (Toy.step[3]) ? This lets you adjust the power of the pattern,
 // so that instead of running [100, 0, 0, 50] the whole time, it might become [120, 0, 0, 50] after a button click
 int first(int seq) {
-  Toy.step[0] = 100;
+  Toy.step[0] = controlval0;
   Toy.step[1] = 0;
   Toy.step[2] = 0;
   Toy.step[3] = 50;
   return 1;
 }
-
-int on_off(int seq) {
-  if (seq % 20) {
-    Toy.step[0] = 200;
-  } else {
-    Toy.step[0] = 0;
-  }
-  return 1;
-}
-
 // Second motor only
 int second(int seq) {
   Toy.step[0] = 0;
-  Toy.step[1] = 100;
+  Toy.step[1] = controlval0;
   Toy.step[2] = 0;
   Toy.step[3] = 50;
   return 1;
@@ -185,10 +220,29 @@ int second(int seq) {
 int third(int seq) {
   Toy.step[0] = 0;
   Toy.step[1] = 0;
-  Toy.step[2] = 100;
+  Toy.step[2] = controlval0;
   Toy.step[3] = 50;
   return 1;
 }
+
+// Shift
+int shiftmotor(int seq) {
+  Toy.step[0] = controlval0;
+  Toy.step[1] = 0;
+  Toy.step[2] = controlval1;
+  Toy.step[3] = 50;
+  return 1;
+}
+int on_off(int seq) {
+  if (seq % 20) {
+    Toy.step[0] = 200;
+  } else {
+    Toy.step[0] = 0;
+  }
+  return 1;
+}
+
+
 
 // Turn on all outputs slightly offset from each other.
 int flicker(int seq) {
@@ -239,7 +293,7 @@ Toy.step[0] = Toy.step[1] = Toy.step[2] = 0; //Reset all motors
 //Decide if to drop a raindrop or not
 
 if(!random(
-4
+constrain(map(controlval0, 0,40, 8,0),0,8)    //map the roughly 0-255 to 0-8
 )
   
   ){ // Every now and then will return a 0, which we add a ! to to make the statement true
@@ -248,7 +302,7 @@ Toy.step[3] = 20; // set standard time for a rainblob to hit
 }
 else{
  
-  Toy.step[3] = random(1,150); //random amount of time between drops
+  Toy.step[3] = random(1,100); //random amount of time between drops
 }
   
   return 1;
@@ -256,28 +310,6 @@ else{
 
 
 
-// Raindrops auto-cycling a storm
-int andyRainCycle(int seq) {
-
-Toy.step[0] = Toy.step[1] = Toy.step[2] = 0; //Reset all motors
-
-//Decide if to drop a raindrop or not
-
-if(!random(
-  
-  round(5 * cos((seq / (100*PI)))-PI))
-  
-  ){ // Every now and then will return a 0, which we add a ! to to make the statement true
-Toy.step[random(0,3)] = 100; // drop a rainblob of standard impact strength
-Toy.step[3] = 60; // set standard time for a rainblob to hit
-}
-else{
- 
-  Toy.step[3] = random(20,150); //random amount of time between drops
-}
-  
-  return 1;
-}
 
 // Opposite of the first pulse() -- turn on all outputs, randomly blip one off
 int pulse2(int seq) {
@@ -319,7 +351,10 @@ int sharpRamp(int seq) {
 }
 
 int fadeCos(int seq) {
-  Toy.step[0] = Toy.step[1] = Toy.step[2] = round(127 * cos((seq / (8*PI))-PI) + 127);
+  Toy.step[0] = Toy.step[1] = Toy.step[2] = round(127 * cos((seq / (
+  constrain(map(controlval0, 0,40, 8,1),1,8)    //map the roughly 0-255 to 1-8
+  
+  *PI))-PI) + 127);
   Toy.step[3] = 50;
   return 1;
 }
