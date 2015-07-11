@@ -8,50 +8,26 @@
 #include <OSSex.h>
 #include "patterns.h"
 
+
+
+
 void setup() {
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
   Toy.setID(BETA);
 
   // Button will increase/decrease power by 20%
- // Toy.setPowerScale(0.2);
-  
+  // Toy.setPowerScale(0.2);
+
   // Blip all the motors and flash the LED to show that everything is working and the device is on.
   startupSequence();
 
   // Set the patterns that the button will cycle through. Toy will do nothing on startup, and clicking the button once will run the 'first' pattern
   // Clicking again will run 'second', etc.
 
+  addPatterns();
 
 
-    Toy.addPattern(sharpRamp);
-
-    Toy.addPattern(cicada);
-
-
-    Toy.addPattern(fadeCos);
-
-  Toy.addPattern(fadeSaw);
-  Toy.addPattern(randomBlip);
-  Toy.addPattern(singleRandomBlip);
-    Toy.addPattern(invSingleRandomBlip);
-
-    Toy.addPattern(sharpRamp);
-  Toy.addPattern(dougaller);
-
-
-  Toy.addPattern(andyRain);
-
-  Toy.addPattern(first);
-  Toy.addPattern(second);
-  Toy.addPattern(third);
-  Toy.addPattern(pulse);
-  Toy.addPattern(weird3);
-  Toy.addPattern(sharpRamp);
-  Toy.addPattern(flicker);
-  Toy.addPattern(weird2);
-  Toy.addPattern(fadeOffset);
-  Toy.addPattern(pulse2);
 
   // Set up the button click handlers
   Toy.attachClick(click);
@@ -68,9 +44,9 @@ void setup() {
 void loop() {
 
 
-serialProcessor();
+  serialProcessor();
 
-  
+
 
 }
 
@@ -79,11 +55,11 @@ void serialProcessor()
   // Serial console. Read a character in to command[1], and a value in to val
   char command[1];
   byte val;
-if (Serial.available() > 0) {
-    Serial.readBytes(command,1);
+  if (Serial.available() > 0) {
+    Serial.readBytes(command, 1);
     if (command[0] == 'l') { // Set LED power
       val = Serial.parseInt();
-      Toy.setLED(0,val);
+      Toy.setLED(0, val);
       Serial.println(val);
     } else if (command[0] == '0' || command[0] == '1' || command[0] == '2') { // Set power of individual motor
       val = Serial.parseInt();
@@ -93,7 +69,7 @@ if (Serial.available() > 0) {
       int out = Serial.parseInt();
       out *= -1;
       val = Serial.parseInt();
-      Toy.setOutput(out,val);
+      Toy.setOutput(out, val);
     } else if (command[0] == '{') {
       int motors[3];
       motors[0] = Serial.parseInt();
@@ -129,7 +105,7 @@ if (Serial.available() > 0) {
       Serial.println(Toy.getInput(in));
     }
   }
-  
+
 }
 
 // Cycle through all the outputs, turn the LED on and leave it on to show that we're on
@@ -137,18 +113,18 @@ void startupSequence() {
   int outs = Toy.device.outCount;
   int outInterval = 100 / outs;
 
-  Toy.setLED(0,128);
+  Toy.setLED(0, 128);
 
   for (int i = 0; i < outs; i++) {
-    Toy.setOutput(i, 100+outInterval*i);
+    Toy.setOutput(i, 100 + outInterval * i);
     delay(100);
     Toy.setOutput(i, 0);
     delay(50);
   }
   for (int i = 0; i < 3; i++) {
-    Toy.setLED(0,0);
+    Toy.setLED(0, 0);
     delay(100);
-    Toy.setLED(0,128);
+    Toy.setLED(0, 128);
     delay(100);
   }
 }
@@ -160,7 +136,7 @@ void click() {
 
 // Double click handler Currently increases power.
 void doubleClick() {
- Toy.increasePower();
+  Toy.increasePower();
 }
 
 // Click and hold handler. Currently decreases power.
@@ -172,9 +148,44 @@ void longPress() {
 
 
 
-//test
-void test(){
- return; 
-}
+void addPatterns() {
+    Toy.addPattern(thumper);
 
+  Toy.addPattern(on_off);
+
+  Toy.addPattern(rainforest);
+  Toy.addPattern(rainforeststorm);
+
+  Toy.addPattern(shiftingWaves);
+
+  Toy.addPattern(mostlyHarmless);
+
+  Toy.addPattern(sharpRamp);
+  Toy.addPattern(dougaller);
+
+  Toy.addPattern(cicada);
+
+  Toy.addPattern(fadeCos);
+
+  Toy.addPattern(fadeSaw);
+  Toy.addPattern(randomBlip);
+  Toy.addPattern(singleRandomBlip);
+  Toy.addPattern(singleRandomBlipinv);
+
+  Toy.addPattern(sharpRamp);
+
+  Toy.addPattern(first);
+  Toy.addPattern(second);
+
+  Toy.addPattern(third);
+
+  Toy.addPattern(pulse);
+  Toy.addPattern(pulseinv);
+
+  Toy.addPattern(flicker);
+  Toy.addPattern(weird2);
+  Toy.addPattern(weird3);
+
+  Toy.addPattern(fadeOffset);
+}
 

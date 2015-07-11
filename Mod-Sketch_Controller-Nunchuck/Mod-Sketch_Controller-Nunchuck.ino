@@ -33,7 +33,7 @@ void setup() {
   // Set the patterns that the button will cycle through. Toy will do nothing on startup, and clicking the button once will run the 'first' pattern
   // Clicking again will run 'second', etc.
 
-    Toy.addPattern(andyRain);
+  Toy.addPattern(rainforest);
   Toy.addPattern(sharpRamp);
   Toy.addPattern(sharpRampInv);
   Toy.addPattern(sharpRampControl);
@@ -338,30 +338,17 @@ return 1;
 
 }
 
-// Andy Test Rain
-int andyRain(int seq) {
+//Rain-like splattering
+//When it's raining in the forest, all is right in the world - Peter Marting
+int rainforest(int seq) {
 
 Toy.step[0] = Toy.step[1] = Toy.step[2] = 0; //Reset all motors
 
-//Decide if to drop a raindrop or not
-
-//setup its map
-// out[] holds the values wanted
-  int out[] = {1,2,4,5,10,50,150,300,400};
-
-//types of values we get //should have increasing vals
-  int in[]  = { 0,20,40,100,150,200,225,255};
-
-if(!random(
-0
-)
   
-  ) //chance that a raindrop will fall
   
-  { // Every now and then will return a 0, which we add a ! to to make the statement true
 Toy.step[random(0,3)] = constrain(map(nunchuck.readRoll(),-70,70,0,255),0,255); // drop a rainblob of standard impact strength
 Toy.step[3] = random(10,20) ; // set standard time for a rainblob to hit
-}
+
 
   
   return 1;
@@ -409,8 +396,6 @@ int sharpRamp(int seq) {
   
     Toy.step[0] = Toy.step[1] = Toy.step[2] = fadeTable[seq];
   }
-  Toy.step[3] = 12;
-     // Toy.step[3] = constrain(map(nunchuck.readJoyY(),0,255,9,15),1,200);
 
     Toy.step[3] = constrain(map(nunchuck.readRoll(),-180,180,1,50),1,50);
 return 1;
