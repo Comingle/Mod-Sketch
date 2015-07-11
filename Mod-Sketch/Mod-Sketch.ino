@@ -27,13 +27,9 @@ void setup() {
 
   addPatterns();
 
+attachClicks();
 
-
-  // Set up the button click handlers
-  Toy.attachClick(click);
-  Toy.attachDoubleClick(doubleClick);
-  Toy.attachLongPressStart(longPress);
-
+ 
   // Start the Serial console
   Serial.begin(9600);
 
@@ -189,3 +185,10 @@ void addPatterns() {
   Toy.addPattern(fadeOffset);
 }
 
+void  attachClicks(){
+
+// Set up the button click handlers
+  Toy.attachClick(click);
+  Toy.attachDoubleClick(doubleClick);
+  Toy.attachLongPressStart(longPress);
+}
