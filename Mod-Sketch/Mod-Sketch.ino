@@ -5,10 +5,6 @@
 #include <OSSex.h>
 
 void setup() {
-  // Set ID. ALPHA (0) or BETA (1) are current options.
-  // The sketch won't compile until you set this!
-  Toy.setID();
-
   // Button will increase/decrease power by 20%
   Toy.setPowerScale(0.2);
   
@@ -241,6 +237,7 @@ int sharpRamp(int seq) {
     Toy.step[0] = Toy.step[1] = Toy.step[2] = fadeTable[seq];
   }
   Toy.step[3] = 12;
+  return 1;
 }
 
 int fadeCos(int seq) {
