@@ -112,6 +112,89 @@ int virtualLoc(int val, int motornum) {
   return motorscale;
 }
 
+/*
+*************** One - off Patterns and clicks
+
+*/
+
+//global variable for "charging up" the power of the dildo through functions
+float chargepow = -1;
+bool charging = false;
+
+void charge(){
+  
+  chargepow=chargepow+0.5;
+     Toy.setOutput(0, constrain(chargepow,0,200));
+    Toy.setOutput(1, constrain(chargepow-150,0,200));
+ Toy.setOutput(2, constrain(chargepow-300,0,200));  
+ 
+ charging = true;
+ 
+ if(chargepow>1000) chargepow=1000;
+}
+
+void discharge(){
+ 
+ if(chargepow>0){ 
+   
+   
+  chargepow = chargepow-10;
+//  //reverse the order too
+//     Toy.setOutput(2, chargepow);
+//    Toy.setOutput(1, constrain(chargepow-200,0,255));
+// Toy.setOutput(0, constrain(chargepow-400,0,255));  
+  // neat exponential sequence inspired by github/jgeisler0303
+  const uint8_t fadeTable[32] = {0, 1, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 9, 10, 12, 15, 17, 21, 25, 30, 36, 43, 51, 61, 73, 87, 104, 125, 149, 178, 213, 255};
+
+int i = constrain(map(chargepow,1000,0,0,32),0,31);
+
+    Toy.setOutput(0, fadeTable[i]);
+    Toy.setOutput(1, fadeTable[constrain(i + 4, 0, 31)]);
+    Toy.setOutput(2, fadeTable[constrain(i + 8, 0, 31)]);
+
+    //delay(constrain(map(nunchuck.readJoyY(), 0, 255, 3, 20), 3, 20));
+  
+ 
+ }
+ 
+ 
+ else{
+     if(charging){Toy.setOutput(-1, 0);
+     charging=false; //fully discharged, stop stopping it!
+     }
+ }
+ 
+}
+
+void blaster() { //cicada like
+  // neat exponential sequence inspired by github/jgeisler0303
+  const uint8_t fadeTable[32] = {0, 1, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 9, 10, 12, 15, 17, 21, 25, 30, 36, 43, 51, 61, 73, 87, 104, 125, 149, 178, 213, 255};
+
+  for (int i = 0; i < 32; i++) {
+    Toy.setOutput(-1, fadeTable[i]);
+    delay(constrain(map(nunchuck.readJoyY(), 0, 255, 3, 20), 3, 20));
+  }
+  Toy.setOutput(-1, 0);
+
+
+}
+void chargeblaster() {
+  // neat exponential sequence inspired by github/jgeisler0303
+  const uint8_t fadeTable[32] = {0, 1, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 9, 10, 12, 15, 17, 21, 25, 30, 36, 43, 51, 61, 73, 87, 104, 125, 149, 178, 213, 255};
+
+  for (int i = 0; i < 32; i++) {
+    Toy.setOutput(0, fadeTable[i]);
+    Toy.setOutput(1, fadeTable[constrain(i + 4, 0, 31)]);
+    Toy.setOutput(2, fadeTable[constrain(i + 8, 0, 31)]);
+
+    delay(constrain(map(nunchuck.readJoyY(), 0, 255, 3, 20), 3, 20));
+  }
+  Toy.setOutput(-1, 0);
+
+
+}
+
+
 
 /*
        Begin Pattern functions
@@ -423,6 +506,26 @@ int fadeCos(int seq) {
   return 1;
 }
 
+
+int shakeWave(int seq) {
+  
+  int decay = 1;
+  chargepow = constrain(chargepow+nunShake() -decay,0,3000);
+
+  int amp = chargepow/10;
+  float freq = .5+ chargepow/1000;
+  float phaseshift = 0;
+
+  Toy.step[0] = cosmotorOsc(seq, amp, freq, 0);
+
+  Toy.step[1] = cosmotorOsc(seq, amp, freq, phaseshift);
+
+  Toy.step[2] = cosmotorOsc(seq, amp, freq, phaseshift * 2);
+
+  Toy.step[3] = 10;
+  return 1;
+}
+
 int shiftingWaves(int seq) {
 
   int amp = 255;
@@ -610,87 +713,5 @@ int mostlyHarmless(int seq) {
   return 1;
 }
 
-
-/*
-*************** One - off Patterns and clicks
-
-*/
-
-//global variable for "charging up" the power of the dildo through functions
-float chargepow = -1;
-bool charging = false;
-
-void charge(){
-  
-  chargepow++;
-     Toy.setOutput(0, chargepow);
-    Toy.setOutput(1, constrain(chargepow-200,0,255));
- Toy.setOutput(2, constrain(chargepow-400,0,255));  
- 
- charging = true;
- 
- if(chargepow>1000) chargepow=1000;
-}
-
-void discharge(){
- 
- if(chargepow>0){ 
-   
-   
-  chargepow = chargepow-10;
-//  //reverse the order too
-//     Toy.setOutput(2, chargepow);
-//    Toy.setOutput(1, constrain(chargepow-200,0,255));
-// Toy.setOutput(0, constrain(chargepow-400,0,255));  
-  // neat exponential sequence inspired by github/jgeisler0303
-  const uint8_t fadeTable[32] = {0, 1, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 9, 10, 12, 15, 17, 21, 25, 30, 36, 43, 51, 61, 73, 87, 104, 125, 149, 178, 213, 255};
-
-int i = constrain(map(chargepow,1000,0,0,32),0,31);
-
-    Toy.setOutput(0, fadeTable[i]);
-    Toy.setOutput(1, fadeTable[constrain(i + 4, 0, 31)]);
-    Toy.setOutput(2, fadeTable[constrain(i + 8, 0, 31)]);
-
-    //delay(constrain(map(nunchuck.readJoyY(), 0, 255, 3, 20), 3, 20));
-  
- 
- }
- 
- 
- else{
-     if(charging){Toy.setOutput(-1, 0);
-     charging=false; //fully discharged, stop stopping it!
-     }
- }
- 
-}
-
-void blaster() { //cicada like
-  // neat exponential sequence inspired by github/jgeisler0303
-  const uint8_t fadeTable[32] = {0, 1, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 9, 10, 12, 15, 17, 21, 25, 30, 36, 43, 51, 61, 73, 87, 104, 125, 149, 178, 213, 255};
-
-  for (int i = 0; i < 32; i++) {
-    Toy.setOutput(-1, fadeTable[i]);
-    delay(constrain(map(nunchuck.readJoyY(), 0, 255, 3, 20), 3, 20));
-  }
-  Toy.setOutput(-1, 0);
-
-
-}
-void chargeblaster() {
-  // neat exponential sequence inspired by github/jgeisler0303
-  const uint8_t fadeTable[32] = {0, 1, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 9, 10, 12, 15, 17, 21, 25, 30, 36, 43, 51, 61, 73, 87, 104, 125, 149, 178, 213, 255};
-
-  for (int i = 0; i < 32; i++) {
-    Toy.setOutput(0, fadeTable[i]);
-    Toy.setOutput(1, fadeTable[constrain(i + 4, 0, 31)]);
-    Toy.setOutput(2, fadeTable[constrain(i + 8, 0, 31)]);
-
-    delay(constrain(map(nunchuck.readJoyY(), 0, 255, 3, 20), 3, 20));
-  }
-  Toy.setOutput(-1, 0);
-
-
-}
 
 

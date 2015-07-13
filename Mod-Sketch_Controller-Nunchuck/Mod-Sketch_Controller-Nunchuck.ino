@@ -105,9 +105,9 @@ void nunchuckprintstats() {
   Serial.print((int)nunchuck.readAccelZ());
   Serial.print(", ");
   
-    Serial.print("   total accel ");
+    Serial.print("  ChargePower ");
 
-    Serial.print((int)abs(nunchuck.readAccelX()) + abs(nunchuck.readAccelY()) + abs(nunchuck.readAccelZ()));
+    Serial.print(chargepow);
   Serial.print(", ");
   Serial.println();
 
@@ -230,6 +230,9 @@ int multiMap(int val, int* _in, int* _out, uint8_t size)
 
 
 void addPatterns() {
+  
+      Toy.addPattern(shakeWave);
+
  Toy.addPattern(shaker);
   Toy.addPattern(shakerAxes);
 
@@ -244,7 +247,7 @@ void addPatterns() {
 
 
   Toy.addPattern(rainforest);
-  Toy.addPattern(rainforeststorm);
+ // Toy.addPattern(rainforeststorm);
 
   Toy.addPattern(shiftingWaves);
 
