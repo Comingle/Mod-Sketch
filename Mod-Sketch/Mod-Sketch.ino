@@ -237,7 +237,7 @@ int sharpRamp(int seq) {
     Toy.step[0] = Toy.step[1] = Toy.step[2] = fadeTable[seq];
   }
   Toy.step[3] = 12;
-  return 1;
+  return 1; 
 }
 
 int fadeCos(int seq) {
