@@ -150,6 +150,43 @@ int location = 0;
   return 1;
 }
 
+//outputs the amount that the controller is shaking scaled to 0-255
+int nunShake(){
+  int shake = -1;
+  
+    //a motionless controller  should have a standard value that it outputs from gravity
+    //it hovers around 400, and ranges from 300-500
+  int still = 500;
+  
+  shake = abs(nunchuck.readAccelX()) + abs(nunchuck.readAccelY()) + abs(nunchuck.readAccelZ()) - still;
+ 
+ //total shake magnitude reaches 1000 - still on harder shakes
+ return constrain(map(shake, 0,1100-still,0,255),0,255); 
+}
+
+//Each Axis's shakeyness controls a motor
+//TODO 
+int shaker(int seq) {
+
+  Toy.step[0] = nunShake();
+  Toy.step[1] = nunShake();
+  Toy.step[2] = nunShake();
+  Toy.step[3] = 20;
+  return 1;
+}
+
+//Each Axis's shakeyness controls a motor
+//TODO 
+int shakerAxes(int seq) {
+
+  Toy.step[0] = constrain( map( abs(nunchuck.readAccelX()),0,400,0,255), 0,255);
+  Toy.step[1] = constrain( map( abs(nunchuck.readAccelY()),0,400,0,255), 0,255);
+  Toy.step[2] = constrain( map( abs(nunchuck.readAccelZ()),0,400,0,255), 0,255);
+  Toy.step[3] = 20;
+  return 1;
+}
+
+
 
 // First motor only
 // Why have a 50ms timing on the step (Toy.step[3]) ?
@@ -578,6 +615,55 @@ int mostlyHarmless(int seq) {
 *************** One - off Patterns and clicks
 
 */
+
+//global variable for "charging up" the power of the dildo through functions
+float chargepow = -1;
+bool charging = false;
+
+void charge(){
+  
+  chargepow++;
+     Toy.setOutput(0, chargepow);
+    Toy.setOutput(1, constrain(chargepow-200,0,255));
+ Toy.setOutput(2, constrain(chargepow-400,0,255));  
+ 
+ charging = true;
+ 
+ if(chargepow>1000) chargepow=1000;
+}
+
+void discharge(){
+ 
+ if(chargepow>0){ 
+   
+   
+  chargepow = chargepow-10;
+//  //reverse the order too
+//     Toy.setOutput(2, chargepow);
+//    Toy.setOutput(1, constrain(chargepow-200,0,255));
+// Toy.setOutput(0, constrain(chargepow-400,0,255));  
+  // neat exponential sequence inspired by github/jgeisler0303
+  const uint8_t fadeTable[32] = {0, 1, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 9, 10, 12, 15, 17, 21, 25, 30, 36, 43, 51, 61, 73, 87, 104, 125, 149, 178, 213, 255};
+
+int i = constrain(map(chargepow,1000,0,0,32),0,31);
+
+    Toy.setOutput(0, fadeTable[i]);
+    Toy.setOutput(1, fadeTable[constrain(i + 4, 0, 31)]);
+    Toy.setOutput(2, fadeTable[constrain(i + 8, 0, 31)]);
+
+    //delay(constrain(map(nunchuck.readJoyY(), 0, 255, 3, 20), 3, 20));
+  
+ 
+ }
+ 
+ 
+ else{
+     if(charging){Toy.setOutput(-1, 0);
+     charging=false; //fully discharged, stop stopping it!
+     }
+ }
+ 
+}
 
 void blaster() { //cicada like
   // neat exponential sequence inspired by github/jgeisler0303

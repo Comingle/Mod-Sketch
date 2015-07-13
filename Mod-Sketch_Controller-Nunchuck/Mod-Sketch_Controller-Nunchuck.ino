@@ -19,6 +19,7 @@ bool z_update() {
 
 
 
+
 void setup() {
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
@@ -61,16 +62,28 @@ void nunchuckprintstats() {
 
   if (z_update()) {
     Serial.print("Z");
+   
+   charge();
+   
+   
+    
   } else  {
     Serial.print("-");
+    
   }
 
   Serial.print(", ");
 
   if (c_update()) {
     Serial.print("C");
+    
+    //Try charging up the blaster!
+    charge();
+    
   } else  {
     Serial.print("-");
+        discharge();
+
   }
 
   Serial.print("   Roll: ");
@@ -91,7 +104,14 @@ void nunchuckprintstats() {
 
   Serial.print((int)nunchuck.readAccelZ());
   Serial.print(", ");
+  
+    Serial.print("   total accel ");
+
+    Serial.print((int)abs(nunchuck.readAccelX()) + abs(nunchuck.readAccelY()) + abs(nunchuck.readAccelZ()));
+  Serial.print(", ");
   Serial.println();
+
+
 
 }
 
@@ -210,12 +230,12 @@ int multiMap(int val, int* _in, int* _out, uint8_t size)
 
 
 void addPatterns() {
+ Toy.addPattern(shaker);
+  Toy.addPattern(shakerAxes);
+
     Toy.addPattern(on_off);
 
-  Toy.addPattern(first);
-  Toy.addPattern(second);
 
-  Toy.addPattern(third);
   Toy.addPattern(dougaller);
 
   Toy.addPattern(movemotor);
@@ -253,7 +273,12 @@ void addPatterns() {
   Toy.addPattern(weird2);
   Toy.addPattern(weird3);
 
-  Toy.addPattern(fadeOffset);
+ // Toy.addPattern(fadeOffset);
+  
+  
+//    Toy.addPattern(first);
+//  Toy.addPattern(second);
+//  Toy.addPattern(third);
 }
 
 void  attachClicks() {
@@ -266,7 +291,7 @@ void  attachClicks() {
   //  nunchuck.attachCClick( halt); //emergency, i just came! shut it down
 
   // nunchuck.attachCClick( blaster); //emergency, i just came shut down
-  nunchuck.attachCClick( chargeblaster); //emergency, i just came shut down
+  //nunchuck.attachCClick( chargeblaster); //emergency, i just came shut down
 }
 
 
