@@ -1,12 +1,13 @@
-/* Mod Sketch v0.2 -- written by Craig Durkin / Comingle. */
+/* Mod Sketch v0.2.1 -- written by Craig Durkin / Comingle. */
 /* This software comes pre-loaded on Comingle Mod sex toys */
 
-/* Include the library */
+#include <Wire.h>
 #include <OSSex.h>
+#include <WiiChuck.h>
 
 void setup() {
   // Button will increase/decrease power by 20%
-  Toy.setPowerScale(0.2);
+  Toy.setPowerScaleStep(0.2);
   
   // Blip all the motors and flash the LED to show that everything is working and the device is on.
   startupSequence();
@@ -39,7 +40,12 @@ void setup() {
 
 
 void loop() {
-  // Serial console. Read a character in to command[1], and a value in to val
+  serialProcessor();
+
+}
+
+// Serial console. Read a character in to command[1], and a value in to val
+void serialProcessor() { 
   char command[1];
   byte val;
 
@@ -93,7 +99,6 @@ void loop() {
       Serial.println(Toy.getInput(in));
     }
   }
-
 }
 
 
@@ -191,7 +196,7 @@ int flicker(int seq) {
 }
 
 
-// Randomly blip an output on for a short burst.
+// Constantly randomly blip an output on for a short burst.
 int pulse(int seq) {
   if (seq % 2) {
     Toy.step[0] = Toy.step[1] = Toy.step[2] = 0;
