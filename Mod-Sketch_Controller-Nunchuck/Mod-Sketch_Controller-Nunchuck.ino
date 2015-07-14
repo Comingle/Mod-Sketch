@@ -62,9 +62,7 @@ void nunchuckprintstats() {
 
   if (z_update()) {
     Serial.print("Z");
-   
-   charge();
-   
+      
    
     
   } else  {
@@ -78,11 +76,11 @@ void nunchuckprintstats() {
     Serial.print("C");
     
     //Try charging up the blaster!
-    charge();
+   // charge();
     
   } else  {
     Serial.print("-");
-        discharge();
+     //   discharge();
 
   }
 
@@ -231,7 +229,14 @@ int multiMap(int val, int* _in, int* _out, uint8_t size)
 
 void addPatterns() {
   
-      Toy.addPattern(shakeWave);
+    Toy.addPattern(rainforest);
+  Toy.addPattern(perlinSwarm);
+  Toy.addPattern(perlinSwarmTime);
+
+  
+   Toy.addPattern(shakeFlow);
+
+ Toy.addPattern(shakeWave);
 
  Toy.addPattern(shaker);
   Toy.addPattern(shakerAxes);
@@ -243,10 +248,10 @@ void addPatterns() {
 
   Toy.addPattern(movemotor);
 
-  Toy.addPattern(thumper);
+  //Toy.addPattern(thumper);
 
 
-  Toy.addPattern(rainforest);
+//  Toy.addPattern(rainforest);
  // Toy.addPattern(rainforeststorm);
 
   Toy.addPattern(shiftingWaves);
