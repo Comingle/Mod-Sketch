@@ -24,18 +24,21 @@ void setup() {
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
   Toy.setID(BETA);
+  
+  //Setup hackerport to read from I2C which is where nunchuck is
   Toy.setHackerPort(HACKER_PORT_I2C);
-
-  // Blip all the motors and flash the LED to show that everything is working and the device is on.
-  startupSequence();
-
 
   // Start the Serial console
   Serial.begin(9600);
 
+//startup the nucnchucks
   nunchuck.begin();
   nunchuck.update();
 
+  // Blip all the motors and flash the LED to show that everything is working and the device is on.
+  startupSequence();
+
+//add all our clicks and patterns
   attachClicks();
   addPatterns();
 

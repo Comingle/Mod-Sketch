@@ -29,7 +29,7 @@ const int knockSensor = 1;     // (Analog 1) for using the piezo as an input dev
 const int audioOut = 10;        // (PWM 2) for using the peizo as an output device. (Thing that goes beep.)
 
 /*Tuning constants. Changing the values below changes the behavior of the device.*/
-int threshold = 70;                 // Minimum signal from the piezo to register as a knock. Higher = less sensitive. Typical values 1 - 10
+int threshold = 20;                 // Minimum signal from the piezo to register as a knock. Higher = less sensitive. Typical values 1 - 10
 const int rejectValue = 25;        // If an individual knock is off by this percentage of a knock we don't unlock. Typical values 10-30
 const int averageRejectValue = 15; // If the average timing of all the knocks is off by this percent we don't unlock. Typical values 5-20
 const int knockFadeTime = 150;     // Milliseconds we allow a knock to fade before we listen for another one. (Debounce timer.)
@@ -43,7 +43,7 @@ int knockReadings[maximumKnocks];    // When someone knocks this array fills wit
 int knockSensorValue = 0;            // Last reading of the knock sensor.
 boolean programModeActive = false;   // True if we're trying to program a new knock.
 
-int simonLevel=5; //Increase the level to increase the hardness
+int simonLevel=2; //Increase the level to increase the hardness
 bool simonRoundStart = false;
 
 
@@ -83,14 +83,14 @@ pinMode(led,OUTPUT);
 
 void loop() {
   
-  serialProcessor();
+ // serialProcessor();
   captouchProcessor();
   
   simpleSimon();
 
 }
 
-void captouchProcessor(){
+int captouchProcessor(){
   
   
    qvalue0 = ADCTouch.read(A2);   //no second parameter
@@ -111,9 +111,9 @@ void captouchProcessor(){
     
             controlval1=constrain(qvalue1*4,0,255);
 
-    analogWrite(led,controlval0); 
+  //  analogWrite(led,controlval0); 
  //    delay(1); //delay is for the cap touch sensing
-  
+  return controlval0;
 }
  
  
@@ -1160,7 +1160,7 @@ void listenToSecretKnock(){
   int now = millis();   
 
   do {                                      // Listen for the next knock or wait for it to timeout. 
-    knockSensorValue = constrain(ADCTouch.read(A2),0,400);
+    knockSensorValue = captouchProcessor();
     if (knockSensorValue >= threshold){                   // Here's another knock. Save the time between knocks.
       now=millis();
       knockReadings[currentKnockNumber] = now - startTime;
@@ -1187,7 +1187,7 @@ void listenToSecretKnock(){
   
   //we've got our knock recorded, lets see if it's valid
     if (validateKnock() == true){
-      
+      Serial.println("you win!");
       simonRoundStart=false;
 
 //They Win! Go to next level
@@ -1197,18 +1197,28 @@ for (i=0; i < 2; i++){
         digitalWrite(11, LOW);
         delay(50);
       }
+      
+       Toy.setOutput(0,150);
+      delay(300);
+       Toy.setOutput(0,200);
+      delay(300);
+       Toy.setOutput(0,255);
+      delay(300);
+       Toy.setOutput(0,0);
+      delay(300);
 //They Win! 
     } else {
-      
+            Serial.println("you LOSE!");
+
             simonRoundStart=false;
 
-      // knock is invalid. Blink the LED as a warning to others.
-      for (i=0; i < 8; i++){          
-        digitalWrite(ledPin, HIGH);
-        delay(50);
-        digitalWrite(ledPin, LOW);
-        delay(50);
-      }
+      Toy.setOutput(0,250);
+      delay(300);
+       Toy.setOutput(0,150);
+      delay(300);
+       Toy.setOutput(0,0);
+      delay(300);
+      
     }
   
 }
@@ -1269,7 +1279,7 @@ boolean validateKnock(){
 
 void listenForFirstKnock(){
   
-   knockSensorValue = ADCTouch.read(A2);
+   knockSensorValue = captouchProcessor();
    Serial.println(knockSensorValue);
   if (knockSensorValue >= threshold){
      listenToSecretKnock();           // We have our first knock. Go and see what other knocks are in store...
@@ -1279,13 +1289,14 @@ void listenForFirstKnock(){
 
 int simpleSimon() {
   
-  //generate a new pattern
- // generatePattern(simonLevel);
-  
+
   
   //Play the current knock
   if(simonRoundStart==false){
-      playbackKnock(200);
+      //generate a new pattern
+  generatePattern(simonLevel);
+  
+      playbackKnock(300);
 simonRoundStart=true;
 delay (1000);
 

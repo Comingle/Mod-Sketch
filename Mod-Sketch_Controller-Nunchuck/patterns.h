@@ -1,6 +1,6 @@
 
 /*
-        Oscillator functions for low res motor work
+        Oscillator functions for working with low res motors
 ************************************************
 */
 
@@ -112,11 +112,65 @@ int virtualLoc(int val, int motornum) {
   return motorscale;
 }
 
-/*
-*************** One - off Patterns and clicks
+//////////////////
+////PERLIN Noise
 
+/* Perlin Noise Code based on perlin function in this source
+  http://code.google.com/p/britable/source/browse/trunk/britable/britable.pde#
+  http://code.google.com/p/britable/
+  kasperkamperman.com 16-09-2012
 */
 
+float lerp(float a, float b, float x)
+{ return a + x * (b - a);
+}
+float perlin_noise_2d(int x, int y) {
+ long n=(long)x+(long)y*57;
+ n = (n<<13)^ n;
+ return 1.0 - (((n *(n * n * 15731L + 789221L) + 1376312589L)  & 0x7fffffff) / 1073741824.0);    
+}
+float perlin_function(float x, float y)
+{
+ int fx = floor(x);
+ int fy = floor(y);
+ 
+ float s,t,u,v;
+ s=perlin_noise_2d(fx,fy);
+ t=perlin_noise_2d(fx+1,fy);
+ u=perlin_noise_2d(fx,fy+1);
+ v=perlin_noise_2d(fx+1,fy+1);
+ 
+ float inter1 = lerp(s,t,x-fx);
+ float inter2 = lerp(u,v,x-fx);  
+
+ return lerp(inter1,inter2,y-fy);
+}
+
+// returns a value between 0 - 255 for lights
+float renderNoise(float x, float y)
+{	
+ float noise;
+ 
+ // 2 octaves
+ //noise = perlin_function(x,y) + perlin_function(x*2,y*2);
+ 
+ noise = perlin_function(x,y); // gives noise in the range of -1 to +1
+ noise = noise *128+127;       // scale to a number between 0 - 255
+ 	 
+ return noise;  
+}
+//End perlin funcs
+
+
+
+/////////////
+/////Patterns
+////////////
+/*
+*************** One - off Patterns and clicks
+****************
+*/
+////////////
 
 //Todo !!! , leads to screwups when incorporated directly in the main loop
 //global variable for "charging up" the power of the dildo through functions
@@ -490,14 +544,10 @@ int fadeCos(int seq) {
 
   int amp = 255;
   float freq = .25;
-  float phaseshift = 0;
-
+  float phaseshift = map(nunchuck.readJoyY(), 0, 255, PI, 0);
   Toy.step[0] = cosmotorOsc(seq, amp, freq, 0);
-
   Toy.step[1] = cosmotorOsc(seq, amp, freq, phaseshift);
-
   Toy.step[2] = cosmotorOsc(seq, amp, freq, phaseshift * 2);
-
   Toy.step[3] = 10;
   return 1;
 }
@@ -505,7 +555,7 @@ int fadeCos(int seq) {
 
 int shakeFlow(int seq) {
   //decent values between 5 and 50
-  int decay = map(nunchuck.readJoyY(), 0, 255, 100, 5);;
+  int decay = map(nunchuck.readJoyY(), 0, 255, 100, 5);
   chargepow = constrain(chargepow+nunShake() -decay,0,4000);
 
   float amp = chargepow/10;
@@ -742,55 +792,6 @@ int mostlyHarmless(int seq) {
 
 
 
-//////////////////
-////PERLIN TEST
-
-
-/* Perlin Noise Code based on perlin function in this source
-  http://code.google.com/p/britable/source/browse/trunk/britable/britable.pde#
-  http://code.google.com/p/britable/
-
-  kasperkamperman.com 16-09-2012
-*/
-
-float lerp(float a, float b, float x)
-{ return a + x * (b - a);
-}
-float perlin_noise_2d(int x, int y) {
- long n=(long)x+(long)y*57;
- n = (n<<13)^ n;
- return 1.0 - (((n *(n * n * 15731L + 789221L) + 1376312589L)  & 0x7fffffff) / 1073741824.0);    
-}
-float perlin_function(float x, float y)
-{
- int fx = floor(x);
- int fy = floor(y);
- 
- float s,t,u,v;
- s=perlin_noise_2d(fx,fy);
- t=perlin_noise_2d(fx+1,fy);
- u=perlin_noise_2d(fx,fy+1);
- v=perlin_noise_2d(fx+1,fy+1);
- 
- float inter1 = lerp(s,t,x-fx);
- float inter2 = lerp(u,v,x-fx);  
-
- return lerp(inter1,inter2,y-fy);
-}
-
-// returns a value between 0 - 255 for lights
-float renderNoise(float x, float y)
-{	
- float noise;
- 
- // 2 octaves
- //noise = perlin_function(x,y) + perlin_function(x*2,y*2);
- 
- noise = perlin_function(x,y); // gives noise in the range of -1 to +1
- noise = noise *128+127;       // scale to a number between 0 - 255
- 	 
- return noise;  
-}
 
 
 
@@ -801,19 +802,17 @@ float renderNoise(float x, float y)
 //Some people want bees in the their butt :)
 int perlinSwarm(int seq) {
 
-  int rainyness = constrain(map(nunchuck.readRoll(), -70, 70, 0, 255), 0, 255);
+int swarmyness = constrain(map(nunchuck.readRoll(), -70, 70, 0, 255), 0, 255);
 
   Toy.step[0] = Toy.step[1] = Toy.step[2] = 0; //Reset all motors
 
-Toy.step[0]  = renderNoise(0, seq)-rainyness;
-Toy.step[1]  = renderNoise(1, seq)-rainyness;
-Toy.step[2]  = renderNoise(2, seq)-rainyness;
+Toy.step[0]  = renderNoise(0, seq)-swarmyness;
+Toy.step[1]  = renderNoise(1, seq)-swarmyness;
+Toy.step[2]  = renderNoise(2, seq)-swarmyness;
 
 
   //Toy.step[random(0, 3)] = constrain(map(rainyness, 0, 255, 0, 255), 0, 255); // drop a rainblob of standard impact strength
   Toy.step[3] = 10 ; // set standard time for a rainblob to hit
-
-
 
   return 1;
 }
@@ -823,7 +822,7 @@ Toy.step[2]  = renderNoise(2, seq)-rainyness;
 //This one i try to mess with the time
 int perlinSwarmTime(int seq) {
 
-  int rainyness = constrain(map(nunchuck.readRoll(), -70, 70, 1, 200), 1, 200);
+  int swarmyness = constrain(map(nunchuck.readRoll(), -70, 70, 1, 200), 1, 200);
 
   Toy.step[0] = Toy.step[1] = Toy.step[2] = 0; //Reset all motors
 
@@ -833,7 +832,7 @@ Toy.step[2]  = renderNoise(2, seq);
 
 
   //Toy.step[random(0, 3)] = constrain(map(rainyness, 0, 255, 0, 255), 0, 255); // drop a rainblob of standard impact strength
-  Toy.step[3] = rainyness ; // set standard time for a rainblob to hit
+  Toy.step[3] = swarmyness ; // set standard time for a rainblob to hit
 
 
 
