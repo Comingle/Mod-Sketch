@@ -36,7 +36,7 @@ pinMode(led,OUTPUT);
   
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
-  Toy.setID(BETA);
+  Toy.setID(MOD);
   
  // Blip all the motors and flash the LED to show that everything is working and the device is on.
   startupSequence();
