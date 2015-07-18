@@ -6,7 +6,6 @@
 #include "WiiChuck.h"
 WiiChuck nunchuck(c_update, z_update);
 
-#include "patterns.h"
 
 
 
@@ -17,47 +16,89 @@ bool z_update() {
   return nunchuck.zPressed();
 }
 
+//Record Playback Items
+//#define CALIB_MAX 512
+//#define CALIB_MIN 100
+#define SAMPLE_DELAY 50 // in ms// qtouch = 50ms always  at 100samples with one pade 100ms with two pads
+#define MAX_SAMPLES 512
+char recording[MAX_SAMPLES] = {255};
+//uint8_t recButtonPin = 4;
+uint8_t playBackPin = 10;//middle motor, all motors are 5,10,11
 
+uint8_t ledPin = 13;
+
+bool modeRec = false;
+
+bool modePlay = false;
+bool modePlayLoop = false;
+
+
+#include "patterns.h"
 
 
 void setup() {
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
-  Toy.setID(BETA);
-  
+  Toy.setID(MOD);
+
   //Setup hackerport to read from I2C which is where nunchuck is
   Toy.setHackerPort(HACKER_PORT_I2C);
 
-  // Start the Serial console
-  Serial.begin(9600);
 
-//startup the nucnchucks
+
+  //startup the nucnchucks
   nunchuck.begin();
   nunchuck.update();
-
+  // Start the Serial console
+  Serial.begin(9600);
   // Blip all the motors and flash the LED to show that everything is working and the device is on.
   startupSequence();
 
-//add all our clicks and patterns
+
+
+  ///////////
+  //RecPlay Items
+//  pinMode(recButtonPin, INPUT);
+  //  digitalWrite(recordButtonPin, HIGH);
+  //  pinMode(playButtonPin, INPUT);
+  //  digitalWrite(playButtonPin, HIGH);
+  pinMode(ledPin, OUTPUT);
+
+  //add all our clicks and patterns
   attachClicks();
   addPatterns();
 
 }
 
-void halt() {
-  Toy.stop();
-}
 
 void loop() {
 
-
+  nunchuck.update();
   serialProcessor();
-  nunchuckprintstats();
+ // nunchuckprintstats();
+  modeCheck();
 
 }
 
+//A large switch statement that helps us determine modes
+//that need to be run outside of OSSEX patterns
+void modeCheck() {
+
+
+  if (modeRec) {
+    recordPattern(playBackPin);
+  }
+  if (modePlayLoop) {
+    modePlay=true;
+  }
+  if (modePlay) {
+    playPattern(playBackPin);
+
+  }
+}
+
+
 void nunchuckprintstats() {
-  nunchuck.update();
   Serial.print(nunchuck.readJoyX());
   Serial.print(", ");
   Serial.print(nunchuck.readJoyY());
@@ -65,25 +106,25 @@ void nunchuckprintstats() {
 
   if (z_update()) {
     Serial.print("Z");
-      
-   
-    
+
+
+
   } else  {
     Serial.print("-");
-    
+
   }
 
   Serial.print(", ");
 
   if (c_update()) {
     Serial.print("C");
-    
+
     //Try charging up the blaster!
-   // charge();
-    
+    // charge();
+
   } else  {
     Serial.print("-");
-     //   discharge();
+    //   discharge();
 
   }
 
@@ -105,10 +146,10 @@ void nunchuckprintstats() {
 
   Serial.print((int)nunchuck.readAccelZ());
   Serial.print(", ");
-  
-    Serial.print("  ChargePower ");
 
-    Serial.print(chargepow);
+  Serial.print("  ChargePower ");
+
+  Serial.print(chargepow);
   Serial.print(", ");
   Serial.println();
 
@@ -231,20 +272,24 @@ int multiMap(int val, int* _in, int* _out, uint8_t size)
 
 
 void addPatterns() {
+
   
-    Toy.addPattern(rainforest);
+   Toy.addPattern(cicada);
+  Toy.addPattern(sharpRamp);
+  
+  Toy.addPattern(rainforest);
   Toy.addPattern(perlinSwarm);
   Toy.addPattern(perlinSwarmTime);
 
-  
-   Toy.addPattern(shakeFlow);
 
- Toy.addPattern(shakeWave);
+  Toy.addPattern(shakeFlow);
 
- Toy.addPattern(shaker);
+  Toy.addPattern(shakeWave);
+
+  Toy.addPattern(shaker);
   Toy.addPattern(shakerAxes);
 
-    Toy.addPattern(on_off);
+  Toy.addPattern(on_off);
 
 
   Toy.addPattern(dougaller);
@@ -254,42 +299,41 @@ void addPatterns() {
   //Toy.addPattern(thumper);
 
 
-//  Toy.addPattern(rainforest);
- // Toy.addPattern(rainforeststorm);
+  //  Toy.addPattern(rainforest);
+  // Toy.addPattern(rainforeststorm);
 
   Toy.addPattern(shiftingWaves);
 
   Toy.addPattern(mostlyHarmless);
 
-  Toy.addPattern(sharpRamp);
   Toy.addPattern(dougaller);
 
-  Toy.addPattern(cicada);
+ 
 
   Toy.addPattern(fadeCos);
 
-  Toy.addPattern(fadeSaw);
-  Toy.addPattern(randomBlip);
-  Toy.addPattern(singleRandomBlip);
-  Toy.addPattern(singleRandomBlipinv);
+  // Toy.addPattern(fadeSaw);
+  //  Toy.addPattern(randomBlip);
+  //  Toy.addPattern(singleRandomBlip);
+  //  Toy.addPattern(singleRandomBlipinv);
+  //
+  //  Toy.addPattern(sharpRamp);
+  //
 
-  Toy.addPattern(sharpRamp);
+
+  //  Toy.addPattern(pulse);
+  //  Toy.addPattern(pulseinv);
+
+//  Toy.addPattern(flicker);
+//  Toy.addPattern(weird2);
+//  Toy.addPattern(weird3);
+
+  // Toy.addPattern(fadeOffset);
 
 
-
-  Toy.addPattern(pulse);
-  Toy.addPattern(pulseinv);
-
-  Toy.addPattern(flicker);
-  Toy.addPattern(weird2);
-  Toy.addPattern(weird3);
-
- // Toy.addPattern(fadeOffset);
-  
-  
-//    Toy.addPattern(first);
-//  Toy.addPattern(second);
-//  Toy.addPattern(third);
+  //    Toy.addPattern(first);
+  //  Toy.addPattern(second);
+  //  Toy.addPattern(third);
 }
 
 void  attachClicks() {
@@ -298,17 +342,54 @@ void  attachClicks() {
   Toy.attachClick(click);
   Toy.attachDoubleClick(doubleClick);
   Toy.attachLongPressStart(longPress);
-  nunchuck.attachZClick( click);
-  //  nunchuck.attachCClick( halt); //emergency, i just came! shut it down
 
-  // nunchuck.attachCClick( blaster); //emergency, i just came shut down
-  //nunchuck.attachCClick( chargeblaster); //emergency, i just came shut down
+
+//Nunchuck Funcs
+  //Future function additions
+    nunchuck.attachCClick(cycle);
+        nunchuck.attachCDoubleClick(revcycle);
+
+      nunchuck.attachCLongPressStart(halt); // emergency, SHUT IT DOWN, I JUST CAME
+
+  //Z button is saved as a modifier to the patterns
+  //nun.attachZClick(blaster);
+
+  //But for right now, let's hook up Z to the Rec and Play
+
+  nunchuck.attachZClick(playback);
+  //  nunchuck.attachZDoubleClick(playbackloop); not ready for prime time
+  nunchuck.attachZLongPressStart(record);
+
+
 }
 
-
+//*****
+//Click Handler Functions
+//*****
 // Click handler. Currently moves to next pattern.
 void click() {
   Toy.cyclePattern();
+}
+
+void cycle() {
+  Toy.cyclePattern();
+}
+void revcycle() {
+   Toy.reverseCyclePattern();
+}
+
+void playback() {
+  modePlay = true;
+  modePlayLoop = false;
+}
+
+void playbackloop() {
+  modePlayLoop = true;
+}
+void record() {
+  modeRec = true;
+  modePlayLoop = false;
+
 }
 
 // Double click handler Currently increases power.
@@ -321,5 +402,141 @@ void longPress() {
   Toy.decreasePower();
 }
 
+void halt() {
+  Toy.stop();
+}
 
+////////////////
+///Different Mode Functions
+///
+
+void playPattern(uint8_t playback) {
+  uint16_t addr = 0;
+  Serial.println("Playing");
+
+  while (true) {
+
+    //Uncomment if want to store to EEPROM
+    //    uint8_t x = EEPROM.read(addr); //read it from memory
+    //    Serial.print("Read EE: "); Serial.print(x);
+
+
+    uint8_t x = recording[addr];
+
+    Serial.print("Play recording: "); Serial.print(x);
+    //Look for end of pattern flag!
+    if (x == 255) break;
+
+
+
+    Serial.print(" @ "); Serial.println(addr);
+    analogWrite(playBackPin, x);
+    delay(SAMPLE_DELAY);
+    addr++;
+    if (addr == 512) break;
+  }
+  Serial.println("Done Playback");
+  //turn it back off
+  analogWrite(playBackPin, 0);
+
+  modePlay = false;
+  //delay(250);
+}
+
+
+void playPatternLoop(uint8_t playback) {
+  uint16_t addr = 0;
+  Serial.println("Playing");
+
+  while (true) {
+
+    //Uncomment if want to store to EEPROM
+    //    uint8_t x = EEPROM.read(addr); //read it from memory
+    //    Serial.print("Read EE: "); Serial.print(x);
+
+
+    uint8_t x = recording[addr];
+
+    Serial.print("Play recording: "); Serial.print(x);
+    //Look for end of pattern flag!
+    if (x == 255) break;
+
+
+
+    Serial.print(" @ "); Serial.println(addr);
+    analogWrite(playBackPin, x);
+    delay(SAMPLE_DELAY);
+    addr++;
+    if (addr == 512) break;
+  }
+  Serial.println("Done Playback");
+  //turn it back off
+  analogWrite(playBackPin, 0);
+
+  modePlay = true;
+  //delay(250);
+}
+
+
+void recordPattern(uint8_t playBack) {
+    modePlay = false;
+
+  uint16_t addr = 0;
+
+  Serial.println("Recording");
+  digitalWrite(ledPin, HIGH);
+
+  while (z_update()) {
+
+
+
+    //int     a = analogRead(A2);
+  nunchuck.update();
+
+    int     a = constrain(map(nunchuck.readRoll(), -70, 70, 0, 255), 0, 254); // limit to 254 for our signals
+
+    Serial.print("Read analog: "); Serial.print(a);
+
+
+    /* if (a < CALIB_MIN) a = CALIB_MIN;
+     if (a > CALIB_MAX) a = CALIB_MAX;
+     a = map(a, CALIB_MIN, CALIB_MAX, 0, 254);
+     */
+
+    //for analogread
+    //      a = map(a, 0, 1024, 0, 254);
+
+    Serial.print(" -> "); Serial.print(a);
+    Serial.print(" @ "); Serial.println(addr);
+
+    analogWrite(playBackPin, a);
+
+
+    recording[addr] = a;
+    //uncomment if want to store on eeprom
+    //EEPROM.write(addr, a);
+
+
+    addr++;
+    if (addr == 512) break;
+    //turn back on for regular analog read
+    delay(SAMPLE_DELAY); // Qtouch already has a 100ms delay inherently
+  }
+  //turn off playback
+  analogWrite(playBackPin, 0);
+
+  //If we exit the loop early, then set as 255 to flag end of pattern recorded
+  if (addr != 512) {
+    //EEPROM.write(addr, 255);
+    recording[addr] = 255;
+  }
+
+  //turn off pin
+  digitalWrite(ledPin, LOW);
+
+  Serial.println("Done rec");
+  delay(250);
+  modeRec = false;
+
+}
 
