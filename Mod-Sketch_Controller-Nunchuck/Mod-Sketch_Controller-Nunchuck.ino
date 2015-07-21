@@ -279,7 +279,7 @@ void addPatterns() {
   
   Toy.addPattern(rainforest);
   Toy.addPattern(perlinSwarm);
-  Toy.addPattern(perlinSwarmTime);
+ // Toy.addPattern(perlinSwarmTime);
 
 
   Toy.addPattern(shakeFlow);
@@ -294,7 +294,7 @@ void addPatterns() {
 
   Toy.addPattern(dougaller);
 
-  Toy.addPattern(movemotor);
+ // Toy.addPattern(movemotor);
 
   //Toy.addPattern(thumper);
 
@@ -375,7 +375,7 @@ void cycle() {
   Toy.cyclePattern();
 }
 void revcycle() {
-   Toy.reverseCyclePattern();
+   Toy.previousPattern();
 }
 
 void playback() {
