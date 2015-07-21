@@ -23,7 +23,7 @@ bool z_update() {
 #define MAX_SAMPLES 512
 char recording[MAX_SAMPLES] = {255};
 //uint8_t recButtonPin = 4;
-uint8_t playBackPin = 10;//middle motor, all motors are 5,10,11
+uint8_t playBackPin = 11;//middle motor, all motors are 5,10,11
 
 uint8_t ledPin = 13;
 
