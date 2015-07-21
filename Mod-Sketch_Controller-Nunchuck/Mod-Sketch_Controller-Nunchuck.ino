@@ -23,7 +23,7 @@ bool z_update() {
 #define MAX_SAMPLES 512
 char recording[MAX_SAMPLES] = {255};
 //uint8_t recButtonPin = 4;
-uint8_t playBackPin = 11;//middle motor, all motors are 5,10,11
+//uint8_t playBackPin = 11;//middle motor, all motors are 5,10,11
 
 uint8_t ledPin = 13;
 
@@ -86,13 +86,13 @@ void modeCheck() {
 
 
   if (modeRec) {
-    recordPattern(playBackPin);
+    recordPattern();
   }
   if (modePlayLoop) {
     modePlay=true;
   }
   if (modePlay) {
-    playPattern(playBackPin);
+    playPattern();
 
   }
 }
@@ -410,7 +410,7 @@ void halt() {
 ///Different Mode Functions
 ///
 
-void playPattern(uint8_t playback) {
+void playPattern() {
   uint16_t addr = 0;
   Serial.println("Playing");
 
@@ -430,21 +430,23 @@ void playPattern(uint8_t playback) {
 
 
     Serial.print(" @ "); Serial.println(addr);
-    analogWrite(playBackPin, x);
+    Toy.setOutput(-1,x);
+    //analogWrite(playBackPin, x);
     delay(SAMPLE_DELAY);
     addr++;
     if (addr == 512) break;
   }
   Serial.println("Done Playback");
   //turn it back off
-  analogWrite(playBackPin, 0);
+      Toy.setOutput(-1,0);
+//  analogWrite(playBackPin, 0);
 
   modePlay = false;
   //delay(250);
 }
 
 
-void playPatternLoop(uint8_t playback) {
+void playPatternLoop() {
   uint16_t addr = 0;
   Serial.println("Playing");
 
@@ -464,21 +466,24 @@ void playPatternLoop(uint8_t playback) {
 
 
     Serial.print(" @ "); Serial.println(addr);
-    analogWrite(playBackPin, x);
+        Toy.setOutput(-1,x);
+//    analogWrite(playBackPin, x);
+
     delay(SAMPLE_DELAY);
     addr++;
     if (addr == 512) break;
   }
   Serial.println("Done Playback");
   //turn it back off
-  analogWrite(playBackPin, 0);
+      Toy.setOutput(-1,0);
+//  analogWrite(playBackPin, 0);
 
   modePlay = true;
   //delay(250);
 }
 
 
-void recordPattern(uint8_t playBack) {
+void recordPattern() {
     modePlay = false;
 
   uint16_t addr = 0;
@@ -509,7 +514,8 @@ void recordPattern(uint8_t playBack) {
     Serial.print(" -> "); Serial.print(a);
     Serial.print(" @ "); Serial.println(addr);
 
-    analogWrite(playBackPin, a);
+    Toy.setOutput(-1,a);
+//    analogWrite(playBackPin, a);
 
 
     recording[addr] = a;
@@ -523,7 +529,8 @@ void recordPattern(uint8_t playBack) {
     delay(SAMPLE_DELAY); // Qtouch already has a 100ms delay inherently
   }
   //turn off playback
-  analogWrite(playBackPin, 0);
+ // analogWrite(playBackPin, 0);
+    Toy.setOutput(-1,0);
 
   //If we exit the loop early, then set as 255 to flag end of pattern recorded
   if (addr != 512) {
