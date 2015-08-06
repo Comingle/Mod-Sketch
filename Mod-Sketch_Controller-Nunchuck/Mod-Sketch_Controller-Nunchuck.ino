@@ -23,7 +23,7 @@ bool z_update() {
 void setup() {
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
-  Toy.setID(BETA);
+  Toy.setID(MOD);
   
   //Setup hackerport to read from I2C which is where nunchuck is
   Toy.setHackerPort(HACKER_PORT_I2C);

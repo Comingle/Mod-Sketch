@@ -25,11 +25,11 @@ void setup() {
   
   //QTOUCH setup
    // No pins to setup, pins can still be used regularly, although it will affect readings
-
+Toy.setHackerPort(HACKER_PORT_AIN);
    // Serial.begin(9600);
 //These are reading the internal cap-touch analog inputs on the dilduino
-    ref0 = ADCTouch.read(A2, 500);    //create reference values to 
-    ref1 = ADCTouch.read(A3, 500);      //account for the capacitance of the pad
+    ref0 = ADCTouch.read(A7, 500);    //create reference values to 
+    ref1 = ADCTouch.read(A9, 500);      //account for the capacitance of the pad
 pinMode(led,OUTPUT);
 
 ////////////
@@ -63,24 +63,23 @@ void loop() {
 void captouchProcessor(){
   
   
-   qvalue0 = ADCTouch.read(A2,10);   //no second parameter ==  --> 100 samples
-     qvalue1 = ADCTouch.read(A3,10);     //  
+   qvalue0 = ADCTouch.read(A7,500);   //no second parameter
+     qvalue1 = ADCTouch.read(A9,500);     //   --> 100 samples
 
     qvalue0 -= ref0;       //remove offset
     qvalue1 -= ref1;
-
+   
+    qvalue0 = abs(qvalue0); // in case we just want absolute difference
+    qvalue1 = abs(qvalue1);
 
     Serial.print("CapTouch in port A2 and A3\t");
     Serial.print(qvalue0);             //return value
-
-     Serial.print("\t");
-    Serial.print(ref0);
     Serial.print("\t");
     Serial.println(qvalue1);
-    
-    controlval0=constrain(qvalue0*4,0,255);
-    
-            controlval1=constrain(qvalue1*4,0,255);
+
+    //The Qtouch from the hacker port is not immediately as sensitive
+    controlval0=constrain(qvalue0*10,0,255);
+    controlval1=constrain(qvalue1*10,0,255);
 
     analogWrite(led,controlval0); 
  //    delay(1); //delay is for the cap touch sensing

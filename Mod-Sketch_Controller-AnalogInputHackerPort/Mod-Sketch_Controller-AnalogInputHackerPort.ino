@@ -20,8 +20,8 @@ int controlval1=0;
 
 //These will be in OSsex in the future
 //Remove then
-#define H0 9
-#define H1 6
+#define H0 24
+#define H1 27
 
 #include "patterns.h"
 
@@ -29,7 +29,7 @@ void setup() {
 
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
-  Toy.setID(BETA);
+  Toy.setID(MOD);
   Toy.setHackerPort(HACKER_PORT_AIN);
   //QTOUCH setup
    // No pins to setup, pins can still be used regularly, although it will affect readings
@@ -38,8 +38,10 @@ void setup() {
 
 //Get initial values 
 //TODO, run an actual calibration routine here
-    ref0 = analogRead(H0);    //create reference values to 
-    ref1 = analogRead(H1);      //account for the capacitance of the pad
+//    ref0 = analogRead(H0);    //create reference values to 
+//    ref1 = analogRead(H1);      //account for the capacitance of the pad
+        ref0 = Toy.getInput(0);    //create reference values to 
+    ref1 = Toy.getInput(1);      //find initial state
 pinMode(led,OUTPUT);
 
  // Blip all the motors and flash the LED to show that everything is working and the device is on.
@@ -69,9 +71,17 @@ void loop() {
 // Thus going to have this function calculate basic CHANGES in the stateof the sensors 
 // ie not really care about positive or negative, just absolute change
 void inputProcessor(){
-   qvalue0 = analogRead(H0);   //gives a value between 0 - 1023
-     qvalue1 = analogRead(H1);     //  
-//Toy.getInput(in)
+   qvalue0 = analogRead(A7);   //gives a value between 0 - 1023
+     qvalue1 = analogRead(A9);     //  not currently giving us anything
+//    qvalue0 =  Toy.getInput(0);
+//qvalue1 = Toy.getInput(1);
+
+//Debuggings
+// controlval0=constrain(map(qvalue0,0,1023,0,255),0,255); 
+// controlval1=constrain(map(qvalue1,0,1023,0,255),0,255);
+
+  controlval0=analogRead(A7);
+ controlval1=analogRead(A9);
 
     qvalue0 -= ref0;      //Check values against baseline
     qvalue1 -= ref1;
@@ -83,15 +93,15 @@ qvalue1 = abs(qvalue1);
 
 // The motor outputs have a max resolution of 255
 //It makes things a bit easier to not have to always be downsampling from 1023-255
- controlval0=constrain(map(qvalue0,0,1023,0,255),0,255); 
- controlval1=constrain(map(qvalue1,0,1023,0,255),0,255);
+// controlval0=constrain(map(qvalue0,0,1023,0,255),0,255); 
+// controlval1=constrain(map(qvalue1,0,1023,0,255),0,255);
     analogWrite(led,controlval0); 
 
 
    Serial.print("Hacker Port Inputs in port H0 (9) and H1 (6) \t");
-    Serial.print(qvalue0);             //return value
+    Serial.print(controlval0);             //return value
     Serial.print("\t");
-    Serial.println(qvalue1);
+    Serial.println(controlval1);
     
 }
  
@@ -252,7 +262,7 @@ void click() {
 
 // Double click handler Currently increases power.
 void doubleClick() {
-  Toy.reverseCyclePattern();
+//  Toy.reverseCyclePattern();
 }
 
 // Click and hold handler. Currently decreases power.
