@@ -373,7 +373,7 @@ int flicker(int seq) {
   }
 
   seq %= 3;
-  Toy.step[seq] = constrain( map( abs(nunchuck.readAccelY()),0,255,0,255), 0,255);;
+  Toy.step[seq] = constrain( map( abs(nunchuck.readAccelY()),0,255,0,255), 0,255);
 
   return 1;
 }
@@ -487,8 +487,8 @@ int weird3(int seq) {
 
 //exponential increase and drop
 int sharpRamp(int seq) {
-  int amp = 255;
-  float freq = .4;
+  int amp = constrain(map(nunchuck.readRoll(), -70, 70, 0, 255), 0, 255);
+  float freq = .4 ; //+constrain(map(nunchuck.readRoll(), -70, 70, 0, 255), 0, 255)/100;
   float phaseshift = 0; // between 0 and 255
 
   Toy.step[0] = sharpmotorOsc(seq, amp, freq, 0);
@@ -503,17 +503,18 @@ int sharpRamp(int seq) {
 
 //exponential increase and drop
 int cicada(int seq) {
-  int amp = 255;
-  float freq = 1;
-  float phaseshift = 0; // between 0 and 255
+   int amp =255;// constrain( map( abs(nunchuck.readAccelY()),0,255,0,255), 0,255);
+  float freq = .6 +constrain(map(nunchuck.readRoll(), -70, 70, 0, 255), 0, 255)/100;
+  float phaseshift = 0;
 
-  Toy.step[0] = 255 - sharpmotorOsc(seq, amp, freq, 0);
+  Toy.step[0] = amp - sharpmotorOsc(seq, amp, freq, 0);
 
-  Toy.step[1] = 255 - sharpmotorOsc(seq, amp, freq, phaseshift);
+  Toy.step[1] = amp - sharpmotorOsc(seq, amp, freq, phaseshift);
 
-  Toy.step[2] = 255 - sharpmotorOsc(seq, amp, freq, phaseshift * 2);
+  Toy.step[2] = amp - sharpmotorOsc(seq, amp, freq, phaseshift * 2);
 
   Toy.step[3] = 10;
+  return 1;
   return 1;
 }
 
