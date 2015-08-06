@@ -1,51 +1,66 @@
-#include <Wire.h>
-
-
 /* Mod Sketch v0.5 -- written by Craig Durkin, Quitmeyer / Comingle. */
 /* This software comes pre-loaded on Comingle Mod sex toys */
+/*this is the super basic version of the main mod sketch that can toggle through
+ * different patterns with no controllers attached or anything
+ */
 
 /* Include the library */
 #include <OSSex.h>
+//this is a meddle-some library that is in Arduino, but due to weird problems in Arduino, needs to be included
+#include <Wire.h>
+
+//include the oscillator functions that drive the patterns
+#include "oscillators.h"
+//Include all the patterns created in the neighboring file
 #include "patterns.h"
 
 
-
-
 void setup() {
-  // Set ID. ALPHA (0) or BETA (1) are current options.
-  // The sketch won't compile until you set this!
-  Toy.setID(BETA);
 
-  // Button will increase/decrease power by 20%
-  // Toy.setPowerScale(0.2);
+  //In the future when there are different versions of the toys, you can select it with the
+  //command below. for right now it just defaults to the MOD if not set
+  // Toy.setID(MOD);
 
-  // Blip all the motors and flash the LED to show that everything is working and the device is on.
-  startupSequence();
-
-  // Set the patterns that the button will cycle through. Toy will do nothing on startup, and clicking the button once will run the 'first' pattern
-  // Clicking again will run 'second', etc.
-
-  addPatterns();
-
-attachClicks();
-
- 
   // Start the Serial console
   Serial.begin(9600);
 
+  //Attach functions to the different types of button clicks
+  attachClicks();
+
+  // Set the patterns that the button will cycle through. Toy will do nothing on startup,
+  //and clicking the button once will run the 'first' pattern
+  // Clicking again will run 'second', etc.
+  addPatterns();
+
+  // Blip all the motors and flash the LED to show that everything is working and the device is on.
+  startupSequence();
 }
 
 
-
+/* 
+ *  Main Loop, 
+ *  Not used as much for patterns
+ *  but you can add extra functions you might want to be running
+ *  continuously
+ *  like the serialProcessor function
+ */
 void loop() {
 
-
+  //This is the main function running in the loop. It allows you to control the dilduino
+  //from a serial interface
   serialProcessor();
 
-
+  //Most of the other commands (like the running of the patterns)
+  // are taken care of more asynchronously outside the loop
 
 }
 
+
+/*
+ * Serial Processor
+ * Takes in data from the serial port to control 
+ * the functions of the dilduino over a variety of interfaces
+ */
 void serialProcessor()
 {
   // Serial console. Read a character in to command[1], and a value in to val
@@ -104,6 +119,11 @@ void serialProcessor()
 
 }
 
+/*
+ * Startup Sequence
+ * This is the basic greeting
+ * your Dildo gives you to show you that everything is working
+ */
 // Cycle through all the outputs, turn the LED on and leave it on to show that we're on
 void startupSequence() {
   int outs = Toy.device.outCount;
@@ -125,6 +145,12 @@ void startupSequence() {
   }
 }
 
+/*
+ * Click Handlers
+ * Functions to map onto the different clicks of all
+ * the different buttons available
+ */
+
 // Click handler. Currently moves to next pattern.
 void click() {
   Toy.cyclePattern();
@@ -142,10 +168,13 @@ void longPress() {
 
 
 
-
+/*
+ * Adding Patterns
+ * All the patterns to be loaded into the toy's queue are loaded up here
+ */
 
 void addPatterns() {
-    Toy.addPattern(thumper);
+  Toy.addPattern(thumper);
 
   Toy.addPattern(on_off);
 
@@ -185,9 +214,9 @@ void addPatterns() {
   Toy.addPattern(fadeOffset);
 }
 
-void  attachClicks(){
+void  attachClicks() {
 
-// Set up the button click handlers
+  // Set up the button click handlers
   Toy.attachClick(click);
   Toy.attachDoubleClick(doubleClick);
   Toy.attachLongPressStart(longPress);

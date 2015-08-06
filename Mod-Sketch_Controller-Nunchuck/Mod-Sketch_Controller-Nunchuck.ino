@@ -1,3 +1,9 @@
+/* Mod Sketch with Nunchuck v0.5 -- written by Craig Durkin, Quitmeyer / Comingle. */
+/* This software comes pre-loaded on Comingle Mod sex toys
+ *this is the super basic version of the main mod sketch that can toggle through
+ * different patterns with no controllers attached or anything
+ */
+
 /* Include the library */
 #include <OSSex.h>
 #include <Wire.h>
@@ -23,7 +29,9 @@ bool modeRec = false;
 bool modePlay = false;
 bool modePlayLoop = false;
 
-//Include all our patterns we can control
+//include the oscillator functions that drive the patterns
+#include "oscillators.h"
+//Include all the patterns we can control created in the neighboring file
 #include "patterns.h"
 
 
@@ -214,26 +222,7 @@ void startupSequence() {
 }
 
 
-//This is a handy function for doing non-linear mappings
-// Example From: (person on Arduino website, TODO update this)
-// note: the _in array should have increasing values
-int multiMap(int val, int* _in, int* _out, uint8_t size)
-{
-  // take care the value is within range
-  // val = constrain(val, _in[0], _in[size-1]);
-  if (val <= _in[0]) return _out[0];
-  if (val >= _in[size - 1]) return _out[size - 1];
 
-  // search right interval
-  uint8_t pos = 1;  // _in[0] allready tested
-  while (val > _in[pos]) pos++;
-
-  // this will handle all exact "points" in the _in array
-  if (val == _in[pos]) return _out[pos];
-
-  // interpolate in the right segment for the rest
-  return (val - _in[pos - 1]) * (_out[pos] - _out[pos - 1]) / (_in[pos] - _in[pos - 1]) + _out[pos - 1];
-}
 
 
 //ADD Patterns
