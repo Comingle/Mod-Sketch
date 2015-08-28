@@ -174,6 +174,7 @@ void longPress() {
  */
 
 void addPatterns() {
+  Toy.addPattern(onetwothree);
   Toy.addPattern(thumper);
 
   Toy.addPattern(on_off);

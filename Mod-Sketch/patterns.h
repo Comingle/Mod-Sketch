@@ -1,15 +1,27 @@
-
-/*
-       Begin Pattern functions
-************************************************
+/*PATTERN FUNCTIONS
+ * This file is a compendium of many basic pattern functions
+ * that we have written
+ * They range from SUPER BASIC (like on_off function
+ * To more sophisticated ones using the oscillator functions
+ *
+ * Each function has a special variable called seq, which is CONSTANTLY INCREASING
+ * You can feed this into different functions to get different behaviors.
+ *
+ * In sketches where there is a controller (like using the nunchuck)
+ * You can see that you can incorporate dynamic variables (sensor readings)
+ * that can change how these patterns operate
 */
 
 
-//Just turn the motors on and off
+/*
+ * ON OFF
+ * //Just turn the motors on and off
+ */
+
 int on_off(int seq) {
 
   int freq = 50;
-  int power = 100;
+  int power = 255;
 
   if (seq % 2) {
     Toy.step[0] = power;
@@ -21,14 +33,17 @@ int on_off(int seq) {
 }
 
 
+/* Single Motor Examples 
+ *  Just turning them on
+ *  First motor only
+ *  Just turns on the first motor
+Question: if we have a constantly ON pattern, 
+then, Why have a 50ms timing on the step (Toy.step[3]) ?
+This lets you adjust the power of the pattern,
+so that instead of running [100, 0, 0, 50] the whole time,
+it might become [120, 0, 0, 50] after a button click
+ */
 
-
-
-// First motor only
-// Why have a 50ms timing on the step (Toy.step[3]) ? 
-//This lets you adjust the power of the pattern,
-// so that instead of running [100, 0, 0, 50] the whole time, 
-//it might become [120, 0, 0, 50] after a button click
 int first(int seq) {
 
   int power = 100;
@@ -39,8 +54,6 @@ int first(int seq) {
   Toy.step[3] = 50;
   return 1;
 }
-
-
 
 // Second motor only
 int second(int seq) {
@@ -64,7 +77,62 @@ int third(int seq) {
   return 1;
 }
 
-// Turn on all outputs slightly offset from each other.
+int onetwothree(int seq){
+
+int power = 255;
+int dur = 200;
+
+seq %= 6;
+
+if(seq==0 || seq ==2 || seq==4){
+
+ Toy.step[0] = 0;
+  Toy.step[1] = 0;
+  Toy.step[2] = 0;
+  Toy.step[3] = dur;
+  return 1;
+  
+}
+
+  if(seq==1){
+ Toy.step[0] = power;
+  Toy.step[1] = 0;
+  Toy.step[2] = 0;
+  Toy.step[3] = dur;
+  return 1;
+  
+}
+
+  if(seq==3){
+ Toy.step[0] = 0;
+  Toy.step[1] = power;
+  Toy.step[2] = 0;
+  Toy.step[3] = dur;
+  return 1;
+  
+}
+
+  
+  if(seq==5){
+ Toy.step[0] = 0;
+  Toy.step[1] = 0;
+  Toy.step[2] = power;
+  Toy.step[3] = dur;
+  return 1;
+  
+}
+ 
+
+
+  
+}
+
+
+/*
+ * FLICKER
+ * // Turn on all outputs slightly offset from each other.
+ */
+
 int flicker(int seq) {
   // reset all motors initally to -1, ie "leave it alone"
   Toy.step[0] = Toy.step[1] = Toy.step[2] = -1;
@@ -82,7 +150,12 @@ int flicker(int seq) {
 }
 
 
-// Constant Randomly blip an output on for a standard length short burst.
+
+/*
+ * PULSE: 
+ * Random Motor Blips
+ * Spaced by constant durations
+ */
 int pulse(int seq) {
 
   int power = 100;
@@ -97,8 +170,11 @@ int pulse(int seq) {
   Toy.step[3] = duration;
   return 1;
 }
+/*
+ * Pulse Inverted
+ * // Opposite of the first pulse() -- turn on all outputs, randomly blip one off
+ */
 
-// Opposite of the first pulse() -- turn on all outputs, randomly blip one off
 int pulseinv(int seq) {
   if (seq % 2) {
     Toy.step[0] = Toy.step[1] = Toy.step[2] = 100;
@@ -113,7 +189,12 @@ int pulseinv(int seq) {
   return 1;
 }
 
-//Fully random pattern, random motor is chosen, for random periods of time and duration
+/*
+ * Random Blip
+ * Fully random pattern
+ * random motor(s) are chosen, for random periods of time and duration
+ */
+
 int randomBlip(int seq) {
 
   int timespread = 110;
@@ -121,7 +202,6 @@ int randomBlip(int seq) {
   int power = 100;
 
   //Reset all motors to 0
-
   Toy.step[0] = Toy.step[1] = Toy.step[2] = 0;
 
   Toy.step[0] = random() % 2 * power;
@@ -134,8 +214,12 @@ int randomBlip(int seq) {
   return 1;
 
 }
+/*
+ * Single Random Blip
+ * Just like
+ * /Randomblip, but only 1 motor at a time
+ */
 
-//Randomblip, but only 1 motor at a time
 int singleRandomBlip(int seq) {
 
   int timespread = 110;
@@ -150,9 +234,13 @@ int singleRandomBlip(int seq) {
 
   Toy.step[3] = random(mintime, mintime + timespread);
   return 1;
-
 }
 
+/*
+ * Single Random Blip
+ * Just like
+ * /Randomblip, but only 1 motor at a time
+ */
 //Inverted SingleRandomblip, but only 1 motor OFF at a time
 int singleRandomBlipinv(int seq) {
 
@@ -355,8 +443,8 @@ int rainforeststorm(int seq) {
 int thumper(int seq) {
 
   int amp = 100;
-  
-    int thumpamp = 255;
+
+  int thumpamp = 255;
 
   float thumpfreq = 4;
 
@@ -364,7 +452,7 @@ int thumper(int seq) {
 
   float phaseshift = 0;
 
-  
+
 
 
   Toy.step[0] = squaremotorOsc(seq, thumpamp, thumpfreq, phaseshift );
