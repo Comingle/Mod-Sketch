@@ -578,6 +578,13 @@ int mostlyHarmless(int seq) {
 }
 
 /*Bored but Horny - by HPW
-
+*"Bored but Horney": Continuos succession of low pulses with irregular 
+*intervals between them, then somewhat random (Perlin noise) clusters 
+of more intense high frequency excitement. No buildup, just constant.
+ it should just keep alternating between a set of low pulses 
+ (...v......v..v........v........v....v......v..v......v.......)
+with occasional clusters (....XXX.....)
+so, something like this:
+...v......v..v........v........v....v......v..v......v.......XX..............v.....v....v.v........v......XXX........v...v...X........v.....v.......v...........v......XX............
 */
 
