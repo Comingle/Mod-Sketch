@@ -15,8 +15,6 @@ int cosmotorOsc(int t, int amplitude, float freq, float phaseshift ) {
 
   int val = -1;
 
-
-
   amplitude = amplitude / 2;  // make go between 0-amplitude instead of -1 to 1
 
   //Basic cos function
@@ -69,7 +67,6 @@ int sawmotorOscINV(int t, int amplitude, float freq, float phaseshift ) {
 
 /* SharpRamp Motor
  // neat exponential sequence inspired by github/jgeisler0303
-
 // Function that simply takes in values from a constant iterator (seq)
 //and outputs a useful value for a motor between 0 and 255
 it does this in an exponentially INCREASING manner for a real sharp attack
@@ -91,9 +88,8 @@ int sharpmotorOsc(int t, int amplitude, float freq, float phaseshift) {
 }
 
 /* SharpRamp Motor INVERTED
-Same as SharpRamp Motor, but inverted to be exponentially DECREASING
-
-*/
+ *Same as SharpRamp Motor, but inverted to be exponentially DECREASING
+ */
 int sharpmotorOscINV(int t, int amplitude, float freq, float phaseshift) {
 
   int val = -1;
@@ -113,32 +109,38 @@ int sharpmotorOscINV(int t, int amplitude, float freq, float phaseshift) {
   return constrain(val, 0, 255); // motors can't go more than 255 or less than 0
 }
 
-/*
- * Virtual Locator
+/* Virtual Locator
  * Virtually moves the "point of vibration" up and down the shaft
  * interpolated between the 3 motors
- * will return a scaling factor between 0 and 255 given a specific motor number,
+ * will return a scaling factor between 0 and 255 given a specific motor number (e.g. 0,1,2),
 and a number in a range of 0-1000
  */
 
 int virtualLoc(int val, int motornum) {
   float motorscale = -1;
 
-  float berth = 500;
-  float motorpos = motornum * berth;
+  //virtual "width" of the point of location
+  // a berth of of 1000 for instance would almost always have all 3 motors on
+  // a berth of 10 would only trigger the motor closest to where the virtual point is on the shaft
+  //a berth of  (#motors-1)/1000 gives a berth 1 motor wide
+  //(so when all the way on one motor, others hit the point where they just stop
+  float berth = 250;
 
-  //total numbers right now is 1
+  //the static virtual positions of each of the motors
+  //currently for a device with 3 motors
+  //(points evenly spaced at 0,1,2)
+  //giving static positions at 0, 500, and 1000
+  float motorpos = motornum * 500;
 
   //  takes a range between 0-1000
+  motorscale = abs(motorpos - val); // calculate total distance between motor and value
+  motorscale = constrain(berth - motorscale, 0, 1000);// if the distance is greater than the motor berth, don't turn the motor on
 
-  //current berth is 1 motor wide (so when all the way on one motor, others just stop
-
-  val = map(val, 0, 1000, 0, 2000);
-  motorscale = berth - abs(motorpos - val), 0, 1000; // calculate total distance
-  motorscale = constrain(motorscale, 0, 1000);
-  motorscale = map(motorscale, 0, 1000, 0, 255);
+  //TODO: see if this mapping makes sense
+  motorscale = map(motorscale, 0, berth, 0, 255); // scale the distance to a value usuable by the motor
   return motorscale;
 }
+
 
 /*
  * Perlin Noise Functions reduced for use with motors

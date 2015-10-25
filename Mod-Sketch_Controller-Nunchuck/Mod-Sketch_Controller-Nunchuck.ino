@@ -1,4 +1,4 @@
-/* Mod Sketch with Nunchuck v0.5 -- written by Craig Durkin, Quitmeyer / Comingle. */
+/* Mod Sketch with Nunchuck v0.x -- written by Craig Durkin, Quitmeyer / Comingle. */
 /* This software comes pre-loaded on Comingle Mod sex toys
  *this is the super basic version of the main mod sketch that can toggle through
  * different patterns with no controllers attached or anything
@@ -8,11 +8,12 @@
 #include <OSSex.h>
 #include <Wire.h>
 
-//Include Wii Nunchuck Accessories
+/* Include Wii Nunchuck Accessories
+//This library makes the C and Z buttons work even with unofficial Wiichucks (e.g. 3rd party ones)
+*/
 #include "WiiChuck.h"
 WiiChuck nunchuck(c_update, z_update);
 
-//This library makes the C and Z buttons work even with unofficial Wiichucks (e.g. 3rd party ones)
 bool c_update() {
   return nunchuck.cPressed();
 }
@@ -32,7 +33,7 @@ bool modePlayLoop = false;
 //include the oscillator functions that drive the patterns
 #include "oscillators.h"
 //Include all the patterns we can control created in the neighboring file
-#include "patterns.h"
+#include "patterns_nun.h"
 
 
 void setup() {
@@ -58,6 +59,13 @@ void setup() {
 }
 
 
+/* 
+ *  Main Loop, 
+ *  Not used as much for patterns
+ *  but you can add extra functions you might want to be running
+ *  continuously
+ *  like the serialProcessor function or nunchuck updates
+ */
 void loop() {
 
   //Keep refreshing the values from the nunchuck
@@ -69,78 +77,16 @@ void loop() {
   //Keep getting new serial controls
   serialProcessor();
 
-
   //Determine what Recording or playback mode we are in.
   modeCheck();
 
 }
 
-//A simple switch statement that helps us determine modes
-//that need to be run outside of OSSEX patterns
-void modeCheck() {
-  if (modeRec) {
-    recordPattern();
-  }
-  if (modePlayLoop) {
-    modePlay = true;
-  }
-  if (modePlay) {
-    playPattern();
-
-  }
-}
-
-
-void nunchuckprintstats() {
-  Serial.print(nunchuck.readJoyX());
-  Serial.print(", ");
-  Serial.print(nunchuck.readJoyY());
-  Serial.print(", ");
-
-  if (z_update()) {
-    Serial.print("Z");
-
-  } else  {
-    Serial.print("-");
-
-  }
-
-  Serial.print(", ");
-
-  if (c_update()) {
-    Serial.print("C");
-
-  } else  {
-    Serial.print("-");
-
-  }
-
-  Serial.print("   Roll: ");
-
-  Serial.print(nunchuck.readRoll());
-  Serial.print(", ");
-  Serial.print(" Pitch ");
-
-  Serial.print(nunchuck.readPitch());
-  Serial.print(", ");
-
-  Serial.print("   Accel Data ");
-
-  Serial.print((int)nunchuck.readAccelX());
-  Serial.print(", ");
-  Serial.print((int)nunchuck.readAccelY());
-  Serial.print(", ");
-
-  Serial.print((int)nunchuck.readAccelZ());
-  Serial.print(", ");
-
-  Serial.print("  ChargePower ");
-
-  Serial.print(chargepow);
-  Serial.print(", ");
-  Serial.println();
-}
-
+/*
+ * Serial Processor
+ * Takes in data from the serial port to control 
+ * the functions of the dilduino over a variety of interfaces
+ */
 
 void serialProcessor()
 {
@@ -200,34 +146,152 @@ void serialProcessor()
 
 }
 
-// Cycle through all the outputs, turn the LED on and leave it on to show that we're on
-void startupSequence() {
-  int outs = Toy.device.outCount;
-  int outInterval = 100 / outs;
+/* Mode Checks - can put toy into different "modes" regardless of patterns
+//A simple switch statement that helps us determine modes
+//that need to be run outside of OSSEX patterns
 
-  Toy.setLED(0, 128);
+//TODO- maybe make this more elegant and part of  a pattern
+*/
 
-  for (int i = 0; i < outs; i++) {
-    Toy.setOutput(i, 100 + outInterval * i);
-    delay(100);
-    Toy.setOutput(i, 0);
-    delay(50);
+
+void modeCheck() {
+  if (modeRec) {
+    recordPattern();
   }
-  for (int i = 0; i < 3; i++) {
-    Toy.setLED(0, 0);
-    delay(100);
-    Toy.setLED(0, 128);
-    delay(100);
+  if (modePlayLoop) {
+    modePlay = true;
+  }
+  if (modePlay) {
+    playPattern();
+
   }
 }
 
+/* Nunchuck Functions
+Functions included to get data from the nunchuck's movements
+*/
 
+void nunchuckprintstats() {
+  Serial.print(nunchuck.readJoyX());
+  Serial.print(", ");
+  Serial.print(nunchuck.readJoyY());
+  Serial.print(", ");
 
+  if (z_update()) {
+    Serial.print("Z");
 
+  } else  {
+    Serial.print("-");
 
-//ADD Patterns
-//This function loads up all the patterns to be used in the current compilation.
-//NOTE: comment out patterns if the memory gets to low, these patterns eat up memory
+  }
+
+  Serial.print(", ");
+
+  if (c_update()) {
+    Serial.print("C");
+
+  } else  {
+    Serial.print("-");
+
+  }
+
+  Serial.print("   Roll: ");
+
+  Serial.print(nunchuck.readRoll());
+  Serial.print(", ");
+  Serial.print(" Pitch ");
+
+  Serial.print(nunchuck.readPitch());
+  Serial.print(", ");
+
+  Serial.print("   Accel Data ");
+
+  Serial.print((int)nunchuck.readAccelX());
+  Serial.print(", ");
+  Serial.print((int)nunchuck.readAccelY());
+  Serial.print(", ");
+
+  Serial.print((int)nunchuck.readAccelZ());
+  Serial.print(", ");
+
+  Serial.print("  ChargePower ");
+
+  Serial.print(chargepow);
+  Serial.print(", ");
+  Serial.println();
+}
+
+/*
+ * Click Handlers
+ * Functions to map onto the different clicks of all
+ * the different buttons available
+ */
+
+void click() {
+  Toy.cyclePattern();
+}
+
+void cycle() {
+  Toy.cyclePattern();
+}
+void revcycle() {
+  Toy.previousPattern();
+}
+
+void playback() {
+  modePlay = true;
+  modePlayLoop = false;
+}
+
+void playbackloop() {
+  modePlayLoop = true;
+}
+void record() {
+  modeRec = true;
+  modePlayLoop = false;
+
+}
+
+// Double click handler Currently increases power.
+void doubleClick() {
+  Toy.increasePower();
+}
+
+// Click and hold handler. Currently decreases power.
+void longPress() {
+  Toy.decreasePower();
+}
+
+void halt() {
+  Toy.stop();
+}
+
+void  attachClicks() {
+
+  // Set up the button click handlers
+  Toy.attachClick(click);
+  Toy.attachDoubleClick(doubleClick);
+  Toy.attachLongPressStart(longPress);
+
+  //Nunchuck Clicks
+  nunchuck.attachCClick(cycle);
+  nunchuck.attachCDoubleClick(revcycle);
+  nunchuck.attachCLongPressStart(halt); // emergency, SHUT IT DOWN, I JUST CAME
+
+  //Z button is saved as a modifier to the patterns or for Record and Play
+  nunchuck.attachZClick(playback);
+  //  nunchuck.attachZDoubleClick(playbackloop); not ready for prime time
+  nunchuck.attachZLongPressStart(record);
+
+}
+
+/*
+ * Adding Patterns
+ * All the patterns to be loaded into the toy's queue are loaded up here
+ * This function loads up all the patterns to be used in the current compilation.
+ * NOTE: comment out patterns if the memory gets too low, these patterns eat up memory, 
+ * but there is room for plenty
+ */
 void addPatterns() {
   Toy.addPattern(cicada);
   Toy.addPattern(sharpRamp);
@@ -291,71 +355,11 @@ void addPatterns() {
   //  Toy.addPattern(third);
 }
 
-void  attachClicks() {
 
-  // Set up the button click handlers
-  Toy.attachClick(click);
-  Toy.attachDoubleClick(doubleClick);
-  Toy.attachLongPressStart(longPress);
 
-  //Nunchuck Clicks
-  nunchuck.attachCClick(cycle);
-  nunchuck.attachCDoubleClick(revcycle);
-  nunchuck.attachCLongPressStart(halt); // emergency, SHUT IT DOWN, I JUST CAME
-
-  //Z button is saved as a modifier to the patterns or for Record and Play
-  nunchuck.attachZClick(playback);
-  //  nunchuck.attachZDoubleClick(playbackloop); not ready for prime time
-  nunchuck.attachZLongPressStart(record);
-
-}
-
-//*****
-//Click Handler Functions
-//*****
-// Click handler. Currently moves to next pattern.
-void click() {
-  Toy.cyclePattern();
-}
-
-void cycle() {
-  Toy.cyclePattern();
-}
-void revcycle() {
-  Toy.previousPattern();
-}
-
-void playback() {
-  modePlay = true;
-  modePlayLoop = false;
-}
-
-void playbackloop() {
-  modePlayLoop = true;
-}
-void record() {
-  modeRec = true;
-  modePlayLoop = false;
-
-}
-
-// Double click handler Currently increases power.
-void doubleClick() {
-  Toy.increasePower();
-}
-
-// Click and hold handler. Currently decreases power.
-void longPress() {
-  Toy.decreasePower();
-}
-
-void halt() {
-  Toy.stop();
-}
-
-////////////////
-///Different Mode Functions
-///
+/* Record and Playback functions
+ *
+*/
 
 void playPattern() {
   uint16_t addr = 0;
@@ -469,5 +473,33 @@ void recordPattern() {
 
   delay(250); //Optional pause before doing anything else after recording
   modeRec = false;
+}
+
+
+/*
+ * Startup Sequence
+ * This is the basic greeting
+ * your Dildo gives you to show you that everything is working
+  Cycle through all the outputs, turn the LED on and leave it on to show that we're on
+ */
+void startupSequence() {
+  int outs = Toy.device.outCount;
+  int outInterval = 100 / outs;
+
+  Toy.setLED(0, 128);
+
+  for (int i = 0; i < outs; i++) {
+    Toy.setOutput(i, 100 + outInterval * i);
+    delay(100);
+    Toy.setOutput(i, 0);
+    delay(50);
+  }
+  for (int i = 0; i < 3; i++) {
+    Toy.setLED(0, 0);
+    delay(100);
+    Toy.setLED(0, 128);
+    delay(100);
+  }
+  
 }
 

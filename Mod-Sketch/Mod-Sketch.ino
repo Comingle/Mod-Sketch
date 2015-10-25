@@ -1,4 +1,4 @@
-/* Mod Sketch v0.5 -- written by Craig Durkin, Quitmeyer / Comingle. */
+/* Mod Sketch v0.x -- written by Craig Durkin, Quitmeyer / Comingle. */
 /* This software comes pre-loaded on Comingle Mod sex toys */
 /*this is the super basic version of the main mod sketch that can toggle through
  * different patterns with no controllers attached or anything
@@ -19,7 +19,7 @@ void setup() {
 
   //In the future when there are different versions of the toys, you can select it with the
   //command below. for right now it just defaults to the MOD if not set
-  // Toy.setID(MOD);
+   Toy.setID(MOD);
 
   // Start the Serial console
   Serial.begin(9600);
@@ -46,7 +46,9 @@ void setup() {
  */
 void loop() {
 
-  //This is the main function running in the loop. It allows you to control the dilduino
+  //These are the main functions running in the loop. 
+  
+  //It allows you to control the dilduino
   //from a serial interface
   serialProcessor();
 
@@ -119,31 +121,6 @@ void serialProcessor()
 
 }
 
-/*
- * Startup Sequence
- * This is the basic greeting
- * your Dildo gives you to show you that everything is working
- */
-// Cycle through all the outputs, turn the LED on and leave it on to show that we're on
-void startupSequence() {
-  int outs = Toy.device.outCount;
-  int outInterval = 100 / outs;
-
-  Toy.setLED(0, 128);
-
-  for (int i = 0; i < outs; i++) {
-    Toy.setOutput(i, 100 + outInterval * i);
-    delay(100);
-    Toy.setOutput(i, 0);
-    delay(50);
-  }
-  for (int i = 0; i < 3; i++) {
-    Toy.setLED(0, 0);
-    delay(100);
-    Toy.setLED(0, 128);
-    delay(100);
-  }
-}
 
 /*
  * Click Handlers
@@ -166,47 +143,53 @@ void longPress() {
   Toy.decreasePower();
 }
 
+void  attachClicks() {
+
+  // Set up the button click handlers
+  Toy.attachClick(click);
+  Toy.attachDoubleClick(doubleClick);
+  Toy.attachLongPressStart(longPress);
+}
 
 
 /*
  * Adding Patterns
  * All the patterns to be loaded into the toy's queue are loaded up here
+ * This function loads up all the patterns to be used in the current compilation.
+ * NOTE: comment out patterns if the memory gets too low, these patterns eat up memory, 
+ * but there is room for plenty
  */
 
 void addPatterns() {
   Toy.addPattern(onetwothree);
-  Toy.addPattern(thumper);
+  
+  Toy.addPattern(first);
+  Toy.addPattern(second);
+  Toy.addPattern(third);
 
-  Toy.addPattern(on_off);
+  Toy.addPattern(fadeCos);
+  Toy.addPattern(cicada);
+  Toy.addPattern(sharpRamp);
+  Toy.addPattern(dougaller);
 
   Toy.addPattern(rainforest);
   Toy.addPattern(rainforeststorm);
 
+  Toy.addPattern(thumper);
+
   Toy.addPattern(shiftingWaves);
 
   Toy.addPattern(mostlyHarmless);
-
-  Toy.addPattern(sharpRamp);
-  Toy.addPattern(dougaller);
-
-  Toy.addPattern(cicada);
-
-  Toy.addPattern(fadeCos);
 
   Toy.addPattern(fadeSaw);
   Toy.addPattern(randomBlip);
   Toy.addPattern(singleRandomBlip);
   Toy.addPattern(singleRandomBlipinv);
 
-  Toy.addPattern(sharpRamp);
-
-  Toy.addPattern(first);
-  Toy.addPattern(second);
-
-  Toy.addPattern(third);
-
   Toy.addPattern(pulse);
   Toy.addPattern(pulseinv);
+
+  Toy.addPattern(on_off);
 
   Toy.addPattern(flicker);
   Toy.addPattern(weird2);
@@ -215,10 +198,31 @@ void addPatterns() {
   Toy.addPattern(fadeOffset);
 }
 
-void  attachClicks() {
 
-  // Set up the button click handlers
-  Toy.attachClick(click);
-  Toy.attachDoubleClick(doubleClick);
-  Toy.attachLongPressStart(longPress);
+/*
+ * Startup Sequence
+ * This is the basic greeting
+ * your Dildo gives you to show you that everything is working
+  Cycle through all the outputs, turn the LED on and leave it on to show that we're on
+ */
+void startupSequence() {
+  int outs = Toy.device.outCount;
+  int outInterval = 100 / outs;
+
+  Toy.setLED(0, 128);
+
+  for (int i = 0; i < outs; i++) {
+    Toy.setOutput(i, 100 + outInterval * i);
+    delay(100);
+    Toy.setOutput(i, 0);
+    delay(50);
+  }
+  for (int i = 0; i < 3; i++) {
+    Toy.setLED(0, 0);
+    delay(100);
+    Toy.setLED(0, 128);
+    delay(100);
+  }
+  
 }
+
