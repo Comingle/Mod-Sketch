@@ -78,9 +78,9 @@ void captouchProcessor(){
     Serial.print("\t");
     Serial.println(qvalue1);
     
-    controlval0=constrain(qvalue0*4,0,255);
+    controlval0=constrain(qvalue0*8,0,255);//bumped up power for internal
     
-            controlval1=constrain(qvalue1*4,0,255);
+            controlval1=constrain(qvalue1*8,0,255); // bumped up power for internal
 
     analogWrite(led,controlval0); 
  //    delay(1); //delay is for the cap touch sensing
@@ -174,50 +174,50 @@ void startupSequence() {
 
 void addPatterns() {
   
-  
-    Toy.addPattern(first);
+      Toy.addPattern(motormix);
+   // Toy.addPattern(first);
     Toy.addPattern(rainforest);
   Toy.addPattern(perlinSwarm);
-  Toy.addPattern(perlinSwarmTime);
+  
+  Toy.addPattern(sharpRamp);
+  
 
+  Toy.addPattern(cicada);
+  Toy.addPattern(movemotor);
   
    Toy.addPattern(shakeFlow);
 
  Toy.addPattern(shakeWave);
 
 
-
+Toy.addPattern(thumper);
+Toy.addPattern(fadeCos);
 
     Toy.addPattern(on_off);
-
+Toy.addPattern(shiftingWaves);
 
   Toy.addPattern(dougaller);
 
-  Toy.addPattern(movemotor);
-
-  //Toy.addPattern(thumper);
+  
 
 
-//  Toy.addPattern(rainforest);
- // Toy.addPattern(rainforeststorm);
 
-  Toy.addPattern(shiftingWaves);
 
-  Toy.addPattern(mostlyHarmless);
+  
 
-  Toy.addPattern(sharpRamp);
-  Toy.addPattern(dougaller);
+  
 
-  Toy.addPattern(cicada);
 
-  Toy.addPattern(fadeCos);
+  Toy.addPattern(perlinSwarmTime);
+
+  
 
   Toy.addPattern(fadeSaw);
   Toy.addPattern(randomBlip);
   Toy.addPattern(singleRandomBlip);
   Toy.addPattern(singleRandomBlipinv);
 
-  Toy.addPattern(sharpRamp);
+  
 
   Toy.addPattern(pulse);
   Toy.addPattern(pulseinv);

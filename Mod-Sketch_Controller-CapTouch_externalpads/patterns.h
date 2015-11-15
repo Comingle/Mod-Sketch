@@ -1,3 +1,4 @@
+
 /*
         Oscillator functions for low res motor work
 ************************************************
@@ -295,62 +296,6 @@ int alternate(int seq) {
   return 1;
 }
 
-
-
-/* Onetwothree
-like the startup sequence but a constant pattern
-*/
-int onetwothree(int seq) {
-
-  int power = 255;
-  int dur = 200;
-
-  seq %= 6;
-
-  if (seq == 0 || seq == 2 || seq == 4) {
-
-    Toy.step[0] = 0;
-    Toy.step[1] = 0;
-    Toy.step[2] = 0;
-    Toy.step[3] = dur;
-    return 1;
-
-  }
-
-  if (seq == 1) {
-    analogWrite(led, constrain(map(controlval0, 0, 1023, 0, 255), 0, 55));
-    Toy.step[0] = power;
-    Toy.step[1] = 0;
-    Toy.step[2] = 0;
-    Toy.step[3] = dur;
-    return 1;
-
-  }
-
-  if (seq == 3) {
-    analogWrite(led, constrain(map(controlval0, 0, 1023, 0, 255), 0, 155));
-    Toy.step[0] = 0;
-    Toy.step[1] = power;
-    Toy.step[2] = 0;
-    Toy.step[3] = dur;
-    return 1;
-
-  }
-
-
-  if (seq == 5) {
-    analogWrite(led, constrain(map(controlval0, 0, 1023, 0, 255), 0, 255));
-    Toy.step[0] = 0;
-    Toy.step[1] = 0;
-    Toy.step[2] = power;
-    Toy.step[3] = dur;
-    return 1;
-
-  }
-
-}
-
-
 //FLAGGED
 //Something wrong with this
 int movemotor(int seq) {
@@ -366,6 +311,18 @@ int location = 0;
   return 1;
 }
 
+
+// Mix
+int motormix(int seq) {
+
+  int power = controlval0;
+
+  Toy.step[0] = power;
+  Toy.step[1] = controlval0/2+controlval1/2;
+  Toy.step[2] = controlval1;
+  Toy.step[3] = 50;
+  return 1;
+}
 
 
 // First motor only
@@ -385,7 +342,7 @@ int first(int seq) {
 // Second motor only
 int second(int seq) {
 
-  int power = controlval1;
+  int power = controlval0;
 
   Toy.step[0] = 0;
   Toy.step[1] = power;

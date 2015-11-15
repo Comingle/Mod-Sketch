@@ -1,25 +1,7 @@
-/*Mod Diagnostic Sketch
- * 2015/10/19 - A Quitmeyer  Public Domain
- * Use this sketch to make sure everything is physically OK
- * with the MOD's electronics
- *
- *
- * To Use:
- * -Connect Mod to Computer
- * -Connect Hackerport to USB cable to potentiometers (testing circuit)
- *
- *
- * Verify:
- * -All 4 LEDs turn on when uploading Sketch
- * -All 3 motors turn on after upload
- * -Button cycles through different functions
- * -Hacker Port Recieves analog input from ~0-1023 on both inputs
- * -Reset Button works
- *
- *
- */
+/* Mod Sketch v0.2 -- written by Craig Durkin / Comingle. */
+/* This software comes pre-loaded on Comingle Mod sex toys */
 
-
+/* Include the library */
 #include <OSSex.h>
 
 #include <ADCTouch.h>
@@ -27,44 +9,39 @@
 #include <Wire.h> // fickle library you have to include
 
 
-
+//Cap touch sensing Setup
 int led = 13;
 int ref0, ref1;       //reference values to remove offset
 int qvalue0;
 int qvalue1;
 
-int controlval0 = 0;
-int controlval1 = 0;
-
-//These will be in OSsex in the future
-//Remove then
-#define H0 24
-#define H1 27
+int controlval0=0;
+int controlval1=0;
 
 #include "patterns.h"
 
-void setup() {
 
+void setup() {
+  
+  //QTOUCH setup
+   // No pins to setup, pins can still be used regularly, although it will affect readings
+
+   // Serial.begin(9600);
+//These are reading the internal cap-touch analog inputs on the dilduino
+    ref0 = ADCTouch.read(A2, 500);    //create reference values to 
+    ref1 = ADCTouch.read(A3, 500);      //account for the capacitance of the pad
+pinMode(led,OUTPUT);
+
+////////////
+  
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
   Toy.setID(MOD);
-  Toy.setHackerPort(HACKER_PORT_AIN);
-  //QTOUCH setup
-  // No pins to setup, pins can still be used regularly, although it will affect readings
-
-  // Serial.begin(9600);
-
-  //Get initial values
-  //TODO, run an actual calibration routine here
-
-  ref0 = Toy.getInput(0);    //create reference values to
-  ref1 = Toy.getInput(1);      //find initial state
-  pinMode(led, OUTPUT);
-
-  // Blip all the motors and flash the LED to show that everything is working and the device is on.
+  
+ // Blip all the motors and flash the LED to show that everything is working and the device is on.
   startupSequence();
 
-  //add all our clicks and patterns
+//add all our clicks and patterns
   attachClicks();
   addPatterns();
 
@@ -77,50 +54,41 @@ void setup() {
 
 
 void loop() {
-
+  
   serialProcessor();
-  inputProcessor();
+  captouchProcessor();
 
 }
 
-//Check the Input
-void inputProcessor() {
-  qvalue0 = analogRead(A7);   //gives a value between 0 - 1023
-  qvalue1 = analogRead(A9);     //  not currently giving us anything
-  //    qvalue0 =  Toy.getInput(0);
-  //qvalue1 = Toy.getInput(1);
+void captouchProcessor(){
+  
+  
+   qvalue0 = ADCTouch.read(A2,10);   //no second parameter ==  --> 100 samples
+     qvalue1 = ADCTouch.read(A3,10);     //  
+
+    qvalue0 -= ref0;       //remove offset
+    qvalue1 -= ref1;
 
 
-  controlval0 = analogRead(A7);
-  controlval1 = analogRead(A9);
+    Serial.print("CapTouch in port A2 and A3\t");
+    Serial.print(qvalue0);             //return value
 
-  qvalue0 -= ref0;      //Check values against baseline
-  qvalue1 -= ref1;
+     Serial.print("\t");
+    Serial.print(ref0);
+    Serial.print("\t");
+    Serial.println(qvalue1);
+    
+    controlval0=constrain(qvalue0*4,0,255);
+    
+            controlval1=constrain(qvalue1*4,0,255);
 
-  // take absolute change
-  qvalue0 = abs(qvalue0);
-  qvalue1 = abs(qvalue1);
-
-
-  // The motor outputs have a max resolution of 255
-  //It makes things a bit easier to not have to always be downsampling from 1023-255
-  // controlval0=constrain(map(qvalue0,0,1023,0,255),0,255);
-  // controlval1=constrain(map(qvalue1,0,1023,0,255),0,255);
-  controlval0 = constrain(map(controlval0, 0, 1023, 0, 255), 0, 255);
-  controlval1 = constrain(map(controlval1, 0, 1023, 0, 255), 0, 255);
-
-if(Toy._running == false){
-  analogWrite(led, constrain(map(1023-controlval0, 0, 1023, 0, 255), 0, 255));
+    analogWrite(led,controlval0); 
+ //    delay(1); //delay is for the cap touch sensing
+  
 }
-  Serial.print("Hacker Port Inputs in port H0 (9) and H1 (6) \t");
-  Serial.print(controlval0);             //return value
-  Serial.print("\t");
-  Serial.println(controlval1);
-
-}
-
-
-
+ 
+ 
+ 
 void serialProcessor()
 {
   // Serial console. Read a character in to command[1], and a value in to val
@@ -178,25 +146,25 @@ void serialProcessor()
   }
 
 }
-
+ 
 
 // Cycle through all the outputs, turn the LED on and leave it on to show that we're on
 void startupSequence() {
   int outs = Toy.device.outCount;
   int outInterval = 100 / outs;
 
-  Toy.setLED(0, 128);
+  Toy.setLED(0,128);
 
   for (int i = 0; i < outs; i++) {
-    Toy.setOutput(i, 100 + outInterval * i);
+    Toy.setOutput(i, 100+outInterval*i);
     delay(100);
     Toy.setOutput(i, 0);
     delay(50);
   }
   for (int i = 0; i < 3; i++) {
-    Toy.setLED(0, 0);
+    Toy.setLED(0,0);
     delay(100);
-    Toy.setLED(0, 128);
+    Toy.setLED(0,128);
     delay(100);
   }
 }
@@ -205,41 +173,65 @@ void startupSequence() {
 
 
 void addPatterns() {
-Toy.addPattern(onetwothree);
   
-  Toy.addPattern(first);
-  Toy.addPattern(second);
-  Toy.addPattern(third);
-
-  Toy.addPattern(fadeCos);
-  Toy.addPattern(cicada);
+      Toy.addPattern(motormix);
+   // Toy.addPattern(first);
+    Toy.addPattern(rainforest);
+  Toy.addPattern(perlinSwarm);
+  
   Toy.addPattern(sharpRamp);
+  
+
+  Toy.addPattern(cicada);
+  Toy.addPattern(movemotor);
+  
+   Toy.addPattern(shakeFlow);
+
+ Toy.addPattern(shakeWave);
+
+
+Toy.addPattern(thumper);
+Toy.addPattern(fadeCos);
+
+    Toy.addPattern(on_off);
+Toy.addPattern(shiftingWaves);
+
   Toy.addPattern(dougaller);
 
-  Toy.addPattern(rainforest);
-  Toy.addPattern(rainforeststorm);
+  
 
-  Toy.addPattern(thumper);
 
-  Toy.addPattern(shiftingWaves);
 
-  Toy.addPattern(mostlyHarmless);
+
+  
+
+  
+
+
+  Toy.addPattern(perlinSwarmTime);
+
+  
 
   Toy.addPattern(fadeSaw);
   Toy.addPattern(randomBlip);
   Toy.addPattern(singleRandomBlip);
   Toy.addPattern(singleRandomBlipinv);
 
+  
+
   Toy.addPattern(pulse);
   Toy.addPattern(pulseinv);
-
-  Toy.addPattern(on_off);
 
   Toy.addPattern(flicker);
 
 
-  
 
+ // Toy.addPattern(fadeOffset);
+  
+  
+//    Toy.addPattern(first);
+//  Toy.addPattern(second);
+//  Toy.addPattern(third);
 }
 
 void  attachClicks() {
@@ -257,7 +249,7 @@ void click() {
 
 // Double click handler Currently increases power.
 void doubleClick() {
-  //  Toy.reverseCyclePattern();
+  Toy.increasePower();
 }
 
 // Click and hold handler. Currently decreases power.
@@ -270,7 +262,9 @@ void halt() {
   Toy.stop();
 }
 
-
+////////////////////////////
+//////////////////////////////
+//////////////////////////////////
 
 
 

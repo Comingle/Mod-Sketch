@@ -312,6 +312,18 @@ int location = 0;
 }
 
 
+// Mix
+int motormix(int seq) {
+
+  int power = controlval1;
+
+  Toy.step[0] = power*2;
+  //Toy.step[1] = controlval0/2+controlval1/2;
+  Toy.step[2] = controlval0*2;
+  Toy.step[3] = 50;
+  return 1;
+}
+
 
 // First motor only
 int first(int seq) {
