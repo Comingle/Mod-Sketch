@@ -1,4 +1,4 @@
-/* Mod Sketch v0.2 -- written by Craig Durkin / Comingle. */
+/* Mod Sketch Testing out input processor */
 /* This software comes pre-loaded on Comingle Mod sex toys */
 
 /* Include the library */
@@ -24,24 +24,28 @@ int controlval1=0;
 #define H1 27
 
 #include "patterns.h"
+#include "InputProcessor.h"
 
+InputProcessor in0(10);
+InputProcessor in1(10);
 void setup() {
 
   // Set ID. ALPHA (0) or BETA (1) are current options.
   // The sketch won't compile until you set this!
   Toy.setID(MOD);
   Toy.setHackerPort(HACKER_PORT_AIN);
-  //QTOUCH setup
-   // No pins to setup, pins can still be used regularly, although it will affect readings
 
-   // Serial.begin(9600);
 
-//Get initial values 
-//TODO, run an actual calibration routine here
-//    ref0 = analogRead(H0);    //create reference values to 
-//    ref1 = analogRead(H1);      //account for the capacitance of the pad
-        ref0 = Toy.getInput(0);    //create reference values to 
-    ref1 = Toy.getInput(1);      //find initial state
+//Setup the input
+in0.setupInput((int)Toy.device.inPins[0]);
+in1.setupInput((int)Toy.device.inPins[1]);
+
+in0.calibrate(4000);
+in1.calibrate(4000);
+
+  //Alternatively setup AND calibrate
+  //in0.setupInputandCal((int)Toy.device.inPins[0], 5000);
+ 
 pinMode(led,OUTPUT);
 
  // Blip all the motors and flash the LED to show that everything is working and the device is on.
@@ -60,6 +64,10 @@ pinMode(led,OUTPUT);
 
 
 void loop() {
+in0.update();
+in1.update();
+
+
   
   serialProcessor();
   inputProcessor();
@@ -71,7 +79,8 @@ void loop() {
 // Thus going to have this function calculate basic CHANGES in the stateof the sensors 
 // ie not really care about positive or negative, just absolute change
 void inputProcessor(){
-  
+   qvalue0 = analogRead(A7);   //gives a value between 0 - 1023
+     qvalue1 = analogRead(A9);     //  not currently giving us anything
 //    qvalue0 =  Toy.getInput(0);
 //qvalue1 = Toy.getInput(1);
 
@@ -82,30 +91,25 @@ void inputProcessor(){
   controlval0=analogRead(A7);
  controlval1=analogRead(A9);
 
- //Process this for audio
-//Remove DC offset
- controlval0 = controlval0-512;
- controlval1 = controlval1-512;
+    qvalue0 -= ref0;      //Check values against baseline
+    qvalue1 -= ref1;
+
+// take absolute change
+qvalue0 = abs(qvalue0);
+qvalue1 = abs(qvalue1);
+
 
 // The motor outputs have a max resolution of 255
 //It makes things a bit easier to not have to always be downsampling from 1023-255
-controlval0 = map(abs(controlval0),0,512,0,255);
-controlval1 = map(abs(controlval1),0,512,0,255);
-
-//super lazy way of noise reduction // todo make it intelligent
-controlval0= constrain(controlval0-50,0,255); 
-controlval1= constrain(controlval1-50,0,255); 
-
-
-    analogWrite(led,260-controlval0); 
+// controlval0=constrain(map(qvalue0,0,1023,0,255),0,255); 
+// controlval1=constrain(map(qvalue1,0,1023,0,255),0,255);
+    analogWrite(led,controlval0); 
 
 
    Serial.print("Hacker Port Inputs in port H0 (9) and H1 (6) \t");
     Serial.print(controlval0);             //return value
     Serial.print("\t");
     Serial.println(controlval1);
-
-   // Toy.output(0,controlval0);
     
 }
  
@@ -195,10 +199,7 @@ void startupSequence() {
 
 
 void addPatterns() {
-
-Toy.addPattern(all);
-Toy.addPattern(allfill);
-       Toy.addPattern(first);
+   
     Toy.addPattern(sharpRamp); 
 
   Toy.addPattern(cicada);
@@ -257,7 +258,7 @@ Toy.addPattern(thumper);
 void  attachClicks() {
   // Set up the button click handlers
   Toy.attachClick(click);
-  Toy.attachDoubleClick(doubleClick);
+  Toy.attachDoubleClick(calibrateAllInputs);
   Toy.attachLongPressStart(longPress);
 }
 
@@ -267,9 +268,12 @@ void click() {
   Toy.cyclePattern();
 }
 
-// Double click handler Currently increases power.
-void doubleClick() {
-//  Toy.reverseCyclePattern();
+// Double click handler 
+void calibrateAllInputs() {
+//calibrate for 3 secs
+in0.calibrate(3000);
+in1.calibrate(3000);
+
 }
 
 // Click and hold handler. Currently decreases power.

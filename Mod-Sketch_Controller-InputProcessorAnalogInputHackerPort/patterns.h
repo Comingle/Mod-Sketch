@@ -349,30 +349,6 @@ int third(int seq) {
   return 1;
 }
 
-// all motors
-int all(int seq) {
-
-  int power = controlval0;
-
-  Toy.step[0] = power;
-  Toy.step[1] = power;
-  Toy.step[2] = power;
-  Toy.step[3] = 1;
-  return 1;
-}
-
-// all motors, fills up to tip with intensity
-int allfill(int seq) {
-
-  int power = controlval0;
-
-  Toy.step[0] = power*3;
-  Toy.step[1] = power*2/3;
-  Toy.step[2] = power;
-  Toy.step[3] = 1;
-  return 1;
-}
-
 // Turn on all outputs slightly offset from each other.
 int flicker(int seq) {
   // reset all motors initally to -1, ie "leave it alone"

@@ -1,0 +1,6 @@
+Calibrator	KEYWORD1
+getMin	KEYWORD2
+getMax	KEYWORD2
+setValue	KEYWORD2
+getValue	KEYWORD2
+reset	KEYWORD2
