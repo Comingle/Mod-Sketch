@@ -26,11 +26,11 @@ class InputProcessor
       //InputProcessor funcs
       int update();
       int update(int funcval); // if you are not just using analogread, you can just pass an integer directly to it
-      int update(int* (*callback)());
+      int update(int (*callback)());
 
    void calibrate(int duration);
    void calibrate(int duration,int funcval);
-   void calibrate(int duration, int* (*callback)());
+   void calibrate(int duration, int (*callback)());
     void setValue(int currentValue);
     int scaleValue(int currentValue);
     int scaleValue10bit(int currentValue);
@@ -40,8 +40,8 @@ class InputProcessor
     
     //Calibration Values
     bool calmode=false;
-    int min=0;          //the input's min from the calibration // default 0
-    int max = 1023;          //the input's max from the calibration  // default 1023
+    int min=715;          //the input's min from the calibration // default 0
+    int max = 730;          //the input's max from the calibration  // default 1023
     
     int STDEV;        //Computed Standard deviation from the calibration
     int rawValue;         //gets the most recent reading from the ADC, or value given
@@ -49,9 +49,12 @@ class InputProcessor
     int lastCal = 0;        //time in milliseconds of the last calibration (to find time since previous calibration do millis()-lastCal
 
 //Useful Values for Quick Access (These might be better as functions, but this can be changed)
-    int customThreshold = 127;        //A user defined threshold //  defaults to 127 if not specified
+    int customThreshold = 100;        //A user defined threshold or offset //  defaults to 127 if not specified
     int AvgDiff;      // The present value's current deviation from the computed average
+    int getAvgDiff(){return scaledValue-getAverage();}
+    int getThreshAvgDiff(){return getAverage()-customThreshold;}
     int ThreshDiff;     // abs(present value - custom Threshold);
+    int getThreshDiff(){return scaledValue-customThreshold;}
     int derivative;     // current "instantaneous" derivative approximation using some set number of samples
 
     
@@ -63,7 +66,7 @@ class InputProcessor
     void fillValue(float, int);
 
     float getAverage();//get avg of the whole buffer
-
+    float getscaledAverage();
     float getElement(uint8_t idx);
     uint8_t getSize() { return _size; }
     uint8_t getCount() { return _cnt; }

@@ -26,11 +26,10 @@ class InputProcessor
       //InputProcessor funcs
       int update();
       int update(int funcval); // if you are not just using analogread, you can just pass an integer directly to it
-      int update(int* (*callback)());
+      
 
    void calibrate(int duration);
    void calibrate(int duration,int funcval);
-   void calibrate(int duration, int* (*callback)());
     void setValue(int currentValue);
     int scaleValue(int currentValue);
     int scaleValue10bit(int currentValue);
@@ -39,7 +38,6 @@ class InputProcessor
     void resetCal();
     
     //Calibration Values
-    bool calmode=false;
     int min=0;          //the input's min from the calibration // default 0
     int max = 1023;          //the input's max from the calibration  // default 1023
     

@@ -34,7 +34,11 @@ bool modePlayLoop = false;
 #include "oscillators.h"
 //Include all the patterns we can control created in the neighboring file
 #include "patterns_nun.h"
+#include "InputProcessor.h"
 
+//input processor stuff
+InputProcessor in0(100);
+InputProcessor in1(100);
 
 void setup() {
   Toy.setID(MOD);
@@ -72,6 +76,22 @@ void loop() {
   nunchuck.update();
   //Show updates of all the Nunchuck stuff
   // nunchuckprintstats();
+
+in0.update(nunchuck.readJoyX());
+in1.update(nunchuck.readJoyY());
+
+Serial.print (in0.rawValue);
+  Serial.print(", scale ");
+Serial.print (in0.scaledValue);
+Serial.print(", buffavg ");
+Serial.print (in0.getAverage());
+Serial.print(", sum ");
+Serial.print (in0.getBuffSum());
+Serial.print(", calmin ");
+Serial.print (in0.min);
+Serial.print(", calMax ");
+Serial.println (in0.max);
+
 
 
   //Keep getting new serial controls
@@ -252,6 +272,13 @@ void record() {
 
 }
 
+// Double click handler 
+void calibrateAllInputs() {
+//calibrate for 3 secs
+in0.calibrate(3000, 10);
+in1.calibrate(3000, 10);
+
+}
 // Double click handler Currently increases power.
 void doubleClick() {
   Toy.increasePower();
@@ -270,7 +297,7 @@ void  attachClicks() {
 
   // Set up the button click handlers
   Toy.attachClick(click);
-  Toy.attachDoubleClick(doubleClick);
+  Toy.attachDoubleClick(calibrateAllInputs);
   Toy.attachLongPressStart(longPress);
 
   //Nunchuck Clicks

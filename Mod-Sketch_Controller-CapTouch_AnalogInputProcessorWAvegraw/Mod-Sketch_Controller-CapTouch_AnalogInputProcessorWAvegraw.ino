@@ -19,7 +19,11 @@ int controlval0=0;
 int controlval1=0;
 
 #include "patterns.h"
+#include "InputProcessor.h"
 
+InputProcessor in0(10);
+InputProcessor in0smooth(10);
+InputProcessor in1(10);
 
 void setup() {
   
@@ -54,9 +58,64 @@ pinMode(led,OUTPUT);
 
 
 void loop() {
-  
+  modeCheck();
   serialProcessor();
-  captouchProcessor();
+ // captouchProcessor();
+ in0.update(ADCTouch.read(A2,10));
+controlval1 = in1.update(ADCTouch.read(A3,10));
+
+Serial.print (in0.rawValue);
+  Serial.print(", scale ");
+Serial.print (in0.scaledValue);
+Serial.print(", buffavg ");
+Serial.print (in0.getAverage());
+Serial.print(", buffavgscaled ");
+Serial.print (controlval0=in0.getscaledAverage());
+Serial.print(", sum ");
+Serial.print (in0.getBuffSum());
+/*
+Serial.print(", avgdiff ");
+Serial.print (in0.getAvgDiff());
+*/
+
+Serial.print(", customthresh ");
+Serial.print (in0.customThreshold);
+Serial.print(", threshavgdiff ");
+Serial.print (constrain(in0.getThreshAvgDiff()*5,0,255));
+
+
+Serial.print(", calmin ");
+Serial.print (in0.min);
+Serial.print(", calMax ");
+Serial.println (in0.max);
+Toy.setLED(0, controlval0);
+
+}
+
+void modeCheck() {
+  if (in0.calmode) {
+    in0.calibrate(3000, getBuffAvg0);
+  }
+//if(in1.calmode){
+//  in1.calibrate(3000,in1.getAverage());
+//}
+}
+
+int getCaptouch0(){
+return ADCTouch.read(A2,100);
+
+}
+
+
+int getCaptouch1(){
+return ADCTouch.read(A3,100);
+
+}
+
+int getBuffAvg0(){
+ in0.update(ADCTouch.read(A2,10));
+ return in0.getAverage();
+
 
 }
 
@@ -173,16 +232,18 @@ void startupSequence() {
 
 
 void addPatterns() {
+Toy.addPattern(all);
+Toy.addPattern(third);
   
       Toy.addPattern(motormix);
-   // Toy.addPattern(first);
+    Toy.addPattern(cicada);
     Toy.addPattern(rainforest);
   Toy.addPattern(perlinSwarm);
   
   Toy.addPattern(sharpRamp);
   
 
-  Toy.addPattern(cicada);
+  
   Toy.addPattern(movemotor);
   
    Toy.addPattern(shakeFlow);
@@ -197,15 +258,6 @@ Toy.addPattern(fadeCos);
 Toy.addPattern(shiftingWaves);
 
   Toy.addPattern(dougaller);
-
-  
-
-
-
-
-  
-
-  
 
 
   Toy.addPattern(perlinSwarmTime);
@@ -237,14 +289,28 @@ Toy.addPattern(shiftingWaves);
 void  attachClicks() {
   // Set up the button click handlers
   Toy.attachClick(click);
-  Toy.attachDoubleClick(doubleClick);
-  Toy.attachLongPressStart(longPress);
+  Toy.attachDoubleClick(calibrateAllInputs);
+  Toy.attachLongPressStart(setCustomThreshold);
 }
 
 
 // Click handler. Currently moves to next pattern.
 void click() {
   Toy.cyclePattern();
+}
+
+
+//Cannot make a handler that uses the timer
+void calibrateAllInputs() {
+//calibrate for 3 secs
+in0.calmode=true;
+in1.calmode=true;
+
+}
+
+void setCustomThreshold(){
+in0.customThreshold = in0.getAverage();
+in1.customThreshold = in1.getAverage();
 }
 
 // Double click handler Currently increases power.
@@ -254,7 +320,7 @@ void doubleClick() {
 
 // Click and hold handler. Currently decreases power.
 void longPress() {
-  Toy.decreasePower();
+ 
 }
 
 

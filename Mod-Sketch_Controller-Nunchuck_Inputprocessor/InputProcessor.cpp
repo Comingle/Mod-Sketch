@@ -67,17 +67,6 @@ addValue(scaledValue); //add the value to our buffer
 return scaledValue;
 
 }
-//Takes in a value from an arbitrary function you setup and feed to it
-int InputProcessor::update(int* (*callback)()){
-rawValue=(int)callback();
-
-scaledValue= scaleValue(rawValue);
-
-addValue(scaledValue); //add the value to our buffer
-
-return scaledValue;
-
-}
 
 
 //calibrate for a certain duration in millis
@@ -86,42 +75,23 @@ void InputProcessor::calibrate(int duration)
 {
   long ctime= millis();
     resetCal();
-while (millis()-ctime < duration) {
-  Serial.println(millis()-ctime);
-  
+while (millis() < duration+ctime) {
         setValue(analogRead(pin));
     }
     lastCal = millis();
-    calmode=false;
 }
 
 //calibrate for a certain duration in millis
 //Used on input with some outside function providing the value
 void InputProcessor::calibrate(int duration, int funcval)
 {
-long ctime= millis();
+  long ctime= millis();
     resetCal();
 while (millis() < duration+ctime) {
-  Serial.println(millis()-ctime);
         setValue(funcval);
     }
     lastCal = millis();
-    calmode=false;
 }
-
-//Takes in a value from an arbitrary function you setup and feed to it
-void InputProcessor::calibrate(int duration, int* (*callback)()){
-long ctime= millis();
-    resetCal();
-while (millis() < duration+ctime) {
-  Serial.println(millis()-ctime);
-        setValue((int)callback());
-    }
-    lastCal = millis();
-    calmode=false;
-}
-
- 
 
 void InputProcessor::setValue(int currentValue)
 {

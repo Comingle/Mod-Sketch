@@ -26,8 +26,8 @@ int controlval1=0;
 #include "patterns.h"
 #include "InputProcessor.h"
 
-InputProcessor in0(10);
-InputProcessor in1(10);
+InputProcessor in0(100);
+InputProcessor in1(100);
 void setup() {
 
   // Set ID. ALPHA (0) or BETA (1) are current options.
@@ -40,17 +40,18 @@ void setup() {
 in0.setupInput((int)Toy.device.inPins[0]);
 in1.setupInput((int)Toy.device.inPins[1]);
 
-in0.calibrate(4000);
-in1.calibrate(4000);
-
-  //Alternatively setup AND calibrate
-  //in0.setupInputandCal((int)Toy.device.inPins[0], 5000);
  
 pinMode(led,OUTPUT);
 
  // Blip all the motors and flash the LED to show that everything is working and the device is on.
   startupSequence();
 
+in0.calibrate(4000);
+in1.calibrate(4000);
+
+  //Alternatively setup AND calibrate
+  //in0.setupInputandCal((int)Toy.device.inPins[0], 5000);
+  
 //add all our clicks and patterns
   attachClicks();
   addPatterns();
@@ -67,13 +68,37 @@ void loop() {
 in0.update();
 in1.update();
 
-
+  //Determine what Recording or playback mode we are in.
+  modeCheck();
   
   serialProcessor();
-  inputProcessor();
+//  inputProcessor();
+
+ controlval0= in0.update();
+controlval1=in1.update();
+
+Serial.print (in0.rawValue);
+  Serial.print(", scale ");
+Serial.print (in0.scaledValue);
+Serial.print(", buffavg ");
+Serial.print (in0.getAverage());
+Serial.print(", sum ");
+Serial.print (in0.getBuffSum());
+Serial.print(", calmin ");
+Serial.print (in0.min);
+Serial.print(", calMax ");
+Serial.println (in0.max);
 
 }
 
+void modeCheck() {
+  if (in0.calmode) {
+    in0.calibrate(4000);
+  }
+if(in1.calmode){
+  in1.calibrate(4000);
+}
+}
 
 //Trying to make this generic and Simple,
 // Thus going to have this function calculate basic CHANGES in the stateof the sensors 
@@ -268,11 +293,12 @@ void click() {
   Toy.cyclePattern();
 }
 
-// Double click handler 
+
+//Cannot make a handler that uses the timer
 void calibrateAllInputs() {
 //calibrate for 3 secs
-in0.calibrate(3000);
-in1.calibrate(3000);
+in0.calmode=true;
+in1.calmode=true;
 
 }
 

@@ -22,12 +22,8 @@ InputProcessor::InputProcessor(int n)
     
   //_inputPin=thepin;
 
- pin = -1;
-
-  
+ pin = -1;  
 }
-
-
 
 
 InputProcessor::~InputProcessor()
@@ -47,10 +43,10 @@ int InputProcessor::update()
 {
 rawValue = analogRead(pin);
 
+
+
+addValue(rawValue); //add the value to our buffer
 scaledValue= scaleValue(rawValue);
-
-addValue(scaledValue); //add the value to our buffer
-
 return scaledValue;
 }
 
@@ -59,21 +55,23 @@ return scaledValue;
  */
 int InputProcessor::update(int funcval){
 rawValue=funcval;
-
+addValue(rawValue); //add the value to our buffer
 scaledValue= scaleValue(rawValue);
 
-addValue(scaledValue); //add the value to our buffer
+
 
 return scaledValue;
 
 }
 //Takes in a value from an arbitrary function you setup and feed to it
-int InputProcessor::update(int* (*callback)()){
+int InputProcessor::update(int (*callback)()){
 rawValue=(int)callback();
+
+addValue(rawValue); //add the value to our buffer
 
 scaledValue= scaleValue(rawValue);
 
-addValue(scaledValue); //add the value to our buffer
+
 
 return scaledValue;
 
@@ -110,7 +108,7 @@ while (millis() < duration+ctime) {
 }
 
 //Takes in a value from an arbitrary function you setup and feed to it
-void InputProcessor::calibrate(int duration, int* (*callback)()){
+void InputProcessor::calibrate(int duration, int (*callback)()){
 long ctime= millis();
     resetCal();
 while (millis() < duration+ctime) {
@@ -205,6 +203,14 @@ float InputProcessor::getAverage()
     if (_cnt == 0) return NAN;
     return _sum / _cnt;
 }
+
+// returns the average of the data-set added sofar scaled between max and min
+float InputProcessor::getscaledAverage()
+{
+    if (_cnt == 0) return NAN;
+    return scaleValue(_sum / _cnt);
+}
+
 
 // returns the value of an element if exist, 0 otherwise
 float InputProcessor::getElement(uint8_t idx)
