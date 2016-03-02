@@ -68,7 +68,5 @@ New from v0.2.4:
 
 U 3,255 0 0 500, 0 0 255 500, 0 255 0 500 = 3 Entries, "First Motor 255, Second 0, Third 0, for 500ms", "First Motor 0, Second 0, Third 255, for 500ms", "First Motor 0, Second 255, Third 0, for 500ms"
 
-allStop Pattern added
-
 New from v0.2.5:
 * `u` Returns current Userpattern
