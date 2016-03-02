@@ -1,4 +1,4 @@
-Mod Software v0.2
+Mod Software v0.2.5
 =====
 
 This is the sketch that runs whenever you turn your Mod on. Feel free to use it as a starting point for you own, or simply to restore your toy back to its original state.
@@ -31,7 +31,7 @@ To turn output 2 to 220:
 
 * `c` to cycle through the patterns. This will return the current pattern number.
 * `g` to get the current pattern number.
-* `s` to stop all patterns and turn all outputs off.
+* `s` to stop all patterns and turn all outputs off and sets Powerlevel to 1.0 and Time to 1.0
 * `r,x` to run a particular pattern.
 
 If the command begins with `{`, you can control all motors in a single command:
@@ -58,3 +58,15 @@ i,0
 ```
 
 The `i` command reads a given input channel on your Mod and prints that value to the console. Mods have two inputs, so `i,0` and `i,1` are the two options for now.
+
+New from v0.2.2:
+* `G` get Powerlevel, returns Powerlevel without changing it first
+* `v` get Version Information, returns for example "Mod-Sketch v0.2.2"
+
+New from v0.2.4:
+* `U ...` Play the User transmitted pattern, for example:
+
+U 3,255 0 0 500, 0 0 255 500, 0 255 0 500 = 3 Entries, "First Motor 255, Second 0, Third 0, for 500ms", "First Motor 0, Second 0, Third 255, for 500ms", "First Motor 0, Second 255, Third 0, for 500ms"
+
+New from v0.2.5:
+* `u` Returns current Userpattern
