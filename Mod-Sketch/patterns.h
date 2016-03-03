@@ -1,4 +1,4 @@
-/* patterns.h v0.2.5 -- written by Craig Durkin / Comingle. */
+/* patterns.h v0.2.5b -- written by Craig Durkin / Comingle. */
 /* reworked/comments added by Holger 'Lynxx' Hippenstiel */
 #define MOTOR1 0
 #define MOTOR2 1
@@ -144,8 +144,6 @@ int fadeOffset(int seq) {
 
 // This pattern does nothing, execept stop all Motors
 int allStop(int seq) {
-  SetMotors(0);  
   SetTime(50);
   return 1;
 }
-
